@@ -153,4 +153,12 @@ export class Complaints extends Model {
   @Column
   certifier_role: string;
 
+  @Column
+  topic_header: string;
+
+  @Column
+  officer_tel: string;
+
+  @Column
+  officer_email: string;
 }

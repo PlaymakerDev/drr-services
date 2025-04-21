@@ -219,7 +219,7 @@ export class ReportController {
 
       let complain
 
-      const complain_data = await this.reportService.getComplainById(Number(cid));
+      let complain_data = await this.reportService.getComplainById(Number(cid));
       const current_date = new Date();
 
       const getUser = await this.reportService.getUser(cid)
@@ -238,11 +238,12 @@ export class ReportController {
 
       const complain_type = await this.reportService.getComplainTypeByGroup(String(masGroupCodeId));
 
-
-
       console.log('Complaint Type >>>>>> ', complain_type);
+      complain_data.officer_tel = complain_data.officer_tel ? complain_data.officer_tel : '...................'
+      complain_data.officer_email = complain_data.officer_email ?complain_data.officer_email: '...................'
 
-
+      console.log( 'officer_email => ' , complain_data.officer_email  ,complain_data.officer_tel);
+      
       const complain_type_new = complain_type.map(item => {
         let is_select = false;
         let area = '';

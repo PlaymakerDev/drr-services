@@ -32,6 +32,11 @@ export class TblComplaintsController {
     examples: {
       example1: {
         value: {
+          "topic_header": "สำนักงานเลขานุการกรม กลุ่มบริหารข้อมูลข่าวสารและเรื่องราวร้องทุกข์ โทร. ๐ ๒๕๕๑ ๕๒๐๐",
+          "certify_by": "Sample",
+          "certify_role": "Sample",
+          "officer_tel": "0124564988789789789",
+          "officer_email": "Sample@Sample.com",
           source_type: "1",
           date_received: "2024-09-21T19:00:00+07:00",
           anonymous: false,
@@ -45,8 +50,6 @@ export class TblComplaintsController {
           district: 2,
           sub_district: 3,
           road: "string",
-          latitude: 12.34567,
-          longitude: 98.76543,
           area: "string",
           document: "complaint-doc.pdf",
           date_closed: null,
@@ -70,14 +73,14 @@ export class TblComplaintsController {
     console.log('User >>>>>> ',user);
     
     
-    if (createTblComplaintDto) {
-      if (!createTblComplaintDto.latitude) {
-        createTblComplaintDto.latitude = null
-      }
-      if (!createTblComplaintDto.longitude) {
-        createTblComplaintDto.longitude = null
-      }
-    }
+    // if (createTblComplaintDto) {
+    //   if (!createTblComplaintDto.latitude) {
+    //     createTblComplaintDto.latitude = null
+    //   }
+    //   if (!createTblComplaintDto.longitude) {
+    //     createTblComplaintDto.longitude = null
+    //   }
+    // }
     return this.tblComplaintsService.create(createTblComplaintDto, user);
   }
 
@@ -254,12 +257,12 @@ private deleteFile(filePath: string) {
     
     
     if (updateTblComplaintDto) {
-      if (!updateTblComplaintDto.latitude) {
-        updateTblComplaintDto.latitude = null
-      }
-      if (!updateTblComplaintDto.longitude) {
-        updateTblComplaintDto.longitude = null
-      }
+      // if (!updateTblComplaintDto.latitude) {
+      //   updateTblComplaintDto.latitude = null
+      // }
+      // if (!updateTblComplaintDto.longitude) {
+      //   updateTblComplaintDto.longitude = null
+      // }
     const updatedComplaint = await this.tblComplaintsService.update(cid, updateTblComplaintDto, user);
   
     if (!updatedComplaint) {

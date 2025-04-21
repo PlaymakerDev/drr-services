@@ -128,8 +128,6 @@ export class ComplaintsService {
         status: status,
         created_by: user.id,
         receive_by: userId,
-        certifier_by: certificateBy,
-        certifier_role: certificateRole,
       });
       
   
@@ -578,8 +576,6 @@ export class ComplaintsService {
       updated_at: moment().utcOffset('+07:00').toDate(),
       receive_by: userId,
       updated_by: userId,
-      certifier_by: certifierBy,
-      certifier_role: certifierRole,
     };
   
     await this.tblComRepo.update(updatedComplaint, { where: { cid } });

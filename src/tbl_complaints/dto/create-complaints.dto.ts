@@ -45,12 +45,6 @@ export class CreateTblComplaintDto {
   @IsString()
   road: string;
 
-  @IsNumber()
-  latitude: number;
-
-  @IsNumber()
-  longitude: number;
-
   @IsString()
   area: string;
 
@@ -71,6 +65,7 @@ export class CreateTblComplaintDto {
 
   @IsString()
   notified_office: string;
+
 
   @IsString()
   document: string;
@@ -138,6 +133,29 @@ export class CreateTblComplaintDto {
 
   @IsString()
   sub_notified_office: string;
+
+  @IsOptional()
+  @IsString()
+  certifier_by: string;
+
+  @IsOptional()
+  @IsString()
+  certifier_role: string;
+
+  @IsOptional()
+  @IsString()
+  officer_tel: string;
+
+  @IsOptional()
+  @IsString()
+  officer_email: string;
+
+
+  @IsOptional()
+  @IsString()
+  topic_header: string;
+
+
 }
 
 export class Querybody {

@@ -42,12 +42,6 @@ export class UpdateTblComplaintDto extends PartialType(CreateTblComplaintDto) {
   @ApiProperty({ description: 'Road', required: false })
   road?: string;
 
-  @ApiProperty({ description: 'Latitude', required: false })
-  latitude?: number;
-
-  @ApiProperty({ description: 'Longitude', required: false })
-  longitude?: number;
-
   @ApiProperty({ description: 'Area', required: false })
   area?: string;
 
@@ -110,4 +104,19 @@ export class UpdateTblComplaintDto extends PartialType(CreateTblComplaintDto) {
 
   @ApiProperty({ description: 'Notified office', required: false })
   notified_office?: string;
+
+  @ApiProperty({ description: 'certifier_by', required: false })
+  certifier_by?: string;
+
+  @ApiProperty({ description: 'certifier_role', required: false })
+  certifier_role?: string;
+
+  @ApiProperty({ description: 'officer_tel', required: false })
+  officer_tel?: string;
+
+  @ApiProperty({ description: 'officer_email', required: false })
+  officer_email?: string;
+  
+  @ApiProperty({ description: 'topic_header', required: false })
+  topic_header?: string;
 }

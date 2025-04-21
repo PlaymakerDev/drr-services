@@ -91,6 +91,8 @@ export class ReportService {
       console.log('additional_contact111========', data[0][0]['additional_contact'])
       console.log('service data >>>>>> ', data);
       const subNotiId = data[0][0]['sub_notified_office'];
+      console.log({subNotiId});
+      
       if (!subNotiId) {
         return data ? data[0][0] : [];
       }
@@ -104,6 +106,8 @@ export class ReportService {
         }
       )
       const noti = `${data[0][0]['deptname']} และ ${findSub.deptname}`
+      console.log({noti});
+      
       data[0][0]['deptname'] = noti;
 
 
