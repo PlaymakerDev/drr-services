@@ -33,8 +33,8 @@ export class TblComplaintsController {
       example1: {
         value: {
           "topic_header": "สำนักงานเลขานุการกรม กลุ่มบริหารข้อมูลข่าวสารและเรื่องราวร้องทุกข์ โทร. ๐ ๒๕๕๑ ๕๒๐๐",
-          "certify_by": "Sample",
-          "certify_role": "Sample",
+          "certifier_by": "Sample",
+          "certifier_role": "Sample",
           "officer_tel": "0124564988789789789",
           "officer_email": "Sample@Sample.com",
           source_type: "1",
