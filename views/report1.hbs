@@ -1,0 +1,432 @@
+<html style="position: relative; top: -20px;">
+<head>
+  <title>CDS</title>
+  <link href='http://fonts.googleapis.com/css?family=Roboto' rel='stylesheet' type='text/css'>
+  <style>
+    @font-face {
+    font-family: 'THSarabunIT9';
+    src: url('{{basePath}}/public/fonts/THSarabunIT๙.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'THSarabunIT9';
+    src: url('{{basePath}}/public/fonts/THSarabunIT๙ Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'THSarabunIT9';
+    src: url('{{basePath}}/public/fonts/THSarabunIT๙ Italic.ttf') format('truetype');
+    font-weight: normal;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'THSarabunIT9';
+    src: url('{{basePath}}/public/fonts/THSarabunIT๙ BoldItalic.ttf') format('truetype');
+    font-weight: bold;
+    font-style: italic;
+}
+
+    body {
+      font-family: 'THSarabunIT9', sans-serif;
+      font-size: 12pt;
+    }
+    .text-head {
+      text-align: center;
+      font-weight: bold;
+      font-size: 14pt;
+    }
+    .text-left {
+      text-align: left;
+      font-weight: bold;
+      font-size: 14pt;
+    }
+    .text {
+      text-align: left;
+      font-size: 14pt;
+    }
+    .text-line {
+      border: 1px solid black;
+    }
+    .column {
+      float: left;
+      width: 50%;
+    }
+    .column-4 {
+      float: left;
+      width: 25%;
+    }
+
+    /* Clear floats after the columns */
+    .row:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+    
+    .ballot-box {
+      font-family: 'Roboto', sans-serif;
+      font-size: 25px;
+      font-weight: bold;
+      margin-right: 5px;
+      width: 25px;
+      height: 25px;
+    }
+
+    .ballot-box-check:after {
+      content: ' \2611';
+    }
+
+    .underline {
+      {{!-- width: calc(100% - 100px); --}}
+      width: calc(100%);
+      border-bottom: 1px dotted black;
+      margin-left: 3px;
+      margin-right: 3px;
+      min-height: 20px;
+      flex: 1;
+
+    }
+     @media print {
+    .newPage {
+      page-break-after: always; /* ขึ้นหน้าใหม่ก่อนแสดง .column */
+    }
+  }
+    .underline2 {
+      width: calc(100%);
+      {{!-- width: calc(100%); --}}
+      border-bottom: 1px dotted black;
+      margin-left: 3px;
+      margin-right: 3px;
+      min-height: 1px;
+      {{!-- flex: 1; --}}
+      {{!-- display: inline-flex; --}}
+    }
+    .underline3 {
+      width: calc(100%);
+      {{!-- width: calc(100%); --}}
+      border-bottom: 1px dotted black;
+      margin-left: 3px;
+      margin-right: 3px;
+      min-height: 1px;
+      {{!-- flex: 1; --}}
+      display: block;
+    }
+    
+    img {
+      padding-top: 6px;
+    }
+    
+ 
+
+
+    ul {
+      list-style-type: none;
+      padding-left: 0; 
+    }
+
+    li p {
+      display: inline-block;
+    }
+
+    .item-complain {
+      {{!-- margin-left: 25px; --}}
+    }
+
+    .item-complain > :first-child {
+      margin-right: 10px;
+    }
+
+    .text-center {
+      text-align: center;
+    }
+    .text-left {
+      text-align: left;
+    }
+
+    .icon-check {
+      width: 16px;
+      position: relative;
+      top: -4px;
+    }
+
+    table, td {
+      font-family: 'THSarabunIT9', sans-serif;
+      font-size: 16pt;
+    }
+
+    .parent-underline {
+      display: flex;
+      align-items: start;
+      
+    }
+
+
+
+    .center {
+      text-align: center;
+    }
+    .centerDate {
+      text-align: center;
+      font-size: ;
+    }
+
+    .tab1 {
+      padding-left: 8px;
+    }
+
+    .displayNone {
+      display: none;
+    }
+    
+  </style>
+</head>
+<body>
+
+  <p class="text-head">แบบรับเรื่องร้องเรียน ผ่าน{{source_name}}</p>
+
+  <p class="text" style="position: relative; top: -5px"><strong>ส่วนราชการ</strong> สำนักงานเลขานุการกรม กลุ่มบริหารข้อมูลข่าวสารและเรื่องราวร้องทุกข์ โทร. ๐ ๒๕๕๑ ๕๒๐๐</p>
+
+  <div class="row" style="position: relative; top: -15px">
+    <div class="column"><strong>ที่</strong> {{document_no}}</div>
+    <div class="column text-left"><strong>วันที่</strong></div>
+  </div>
+
+  <div style="position: relative; top: -15px">
+  <hr class="text-line">
+
+  <div class="row">
+    <div class="column"><strong>๑.รายละเอียดผู้ร้อง</strong></div>
+    <div class="column parent-underline">
+      <strong>{{receive_type}}</strong>
+      <div class="underline center" style="font-size: 16px;">{{receive_date}}</div>
+      <strong class="{{headUnderline}}">{{time}}</strong>
+      <div class="underline center {{underline}}">{{receive_time}}</div>
+    </div>
+  </div>
+
+
+
+  <div class="row">
+    <div class="column parent-underline">
+      <div>ชื่อ</div> 
+      <div class="underline tab1">{{complain_data.first_name}}</div>
+    </div>
+    <div class="column parent-underline">
+      <div>นามสกุล</div> 
+      <div class="underline tab1">{{complain_data.last_name}}</div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="parent-underline">
+      <div>หมายเลขโทรศัพท์</div>
+      <div class="underline left">{{reporter_phone_number}}</div>
+    </div>
+  
+  </div>
+  <div class="row">
+    <div class="column">&nbsp;</div>
+    <div class="column parent-underline">
+      <div>ผู้รับเรื่อง</div>
+      <div class="underline" style="margin-right: 130px;"></div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="column">&nbsp;</div>
+    <div class="column" style="display: flex; justify-content: center">
+      <div>{{receive_by}}</div>
+      <div style="margin-right: 100px;"></div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="column">&nbsp;</div>
+    <div class="column" style="display: flex; justify-content: center">
+      <div>{{receive_position}}</div>
+      <div style="margin-right: 100px;"></div>
+    </div>
+  </div>
+</div>
+
+  <div style="position: relative; top: -20px">
+
+
+  <hr class="text-line">
+
+  <div class="row">
+    <div class="column-4"><strong>๒.เนื้อหาเรื่องร้องเรียน</strong></div>
+    <div class="column-4 parent-underline"><div>จังหวัด</div><div class="underline center">{{complain_data.province_name}}</div></div>
+    <div class="column-4 parent-underline"><div>อำเภอ</div><div class="underline center">{{complain_data.district_name}}</div></div>
+    <div class="column-4 parent-underline"><div>ตำบล</div><div class="underline center" style="margin-right: 0;">{{complain_data.sub_district_name}}</div></div>
+  </div>
+
+  {{#each complain_type}}
+    {{#if is_select}}
+      {{#if is_other}}   
+        {{#if isShort}}
+        <div class="item-complain parent-underline" style="">
+              <img src="{{basePath}}/public/icons/checkbox-selected-svgrepo-com.svg" alt="checked" class="icon-check"/>
+                <span >{{mas_name}} </span> 
+                <span class="" style="border-bottom:1px dotted black; 
+                margin-left: 3px; margin-right: 3px; min-height: 1px; display: flex; align-items: start; min-inline-size: fit-content;
+                ">&nbsp;{{complaint_other}}</span>
+                <span>บริเวณ</span>
+                <span class="underline2" style="">&nbsp; {{area}}</span>
+          </div>
+        {{!-- <div class="display: flex; align-items: start; min-inline-size: fit-content;">
+              <img src="{{basePath}}/public/icons/checkbox-selected-svgrepo-com.svg" alt="checked" class="icon-check"/>
+              <div>
+                <span >{{mas_name}} </span> 
+                <span class="underline2 parent-underline" style="border-style: solid; display: inline;">&nbsp;{{complaint_other}}</span>
+                <span>บริเวณ</span>
+                <span class="underline2" style="border-style: solid; display: inline;"> aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa{{area}}</span>
+            </div>
+          </div> --}}
+          {{else}}
+              {{!-- <div"display: flex; align-items: start;"> --}}
+          <div>
+              <img src="{{basePath}}/public/icons/checkbox-selected-svgrepo-com.svg" alt="checked" class="icon-check"/>
+              <div style="display: inline; align-items: start; min-inline-size: fit-content; padding-left: 8px; position: relative; top: -6px">
+                <span style="">{{mas_name}} </span> 
+                <span class="underline2 parent-underline" style="display: inline;">&nbsp;{{complaint_other}}</span>
+                <span>บริเวณ</span>
+                <span class="underline2 " style="display: inline;"> {{area}}</span>
+              </div>
+          </div>
+            {{!-- </div> --}}
+            {{/if}}
+      {{else if is_road}}
+        <div class="item-complain parent-underline">
+          <img src="{{basePath}}/public/icons/checkbox-selected-svgrepo-com.svg" alt="checked" class="icon-check"/>
+        <div>
+            {{mas_name}}
+                ถนนสาย
+                <span class="underline">&nbsp;{{road}}</span>
+                 บริเวณ
+                <span class="underline2"> {{area}}</span>
+             </div>
+        </div>
+      {{else}}
+            {{#if isShort}}
+                  <div class="item-complain parent-underline">
+                <img src="{{basePath}}/public/icons/checkbox-selected-svgrepo-com.svg" alt="checked" class="icon-check"/>
+                {{mas_name}} 
+                บริเวณ
+              <div class="underline">{{area}}</div>
+              </div>
+            {{else}}
+              <div class="item-complain parent-underline">
+              <img src="{{basePath}}/public/icons/checkbox-selected-svgrepo-com.svg" alt="checked" class="icon-check"/>
+              <div>
+                {{mas_name}} บริเวณ
+                <span class="underline2">{{area}}</span>
+              </div>
+            </div>
+            {{/if}}
+            
+          
+          
+        
+      {{/if}}
+    {{else}}
+      {{#if is_road}}
+        <div class="item-complain parent-underline">
+          <img src="{{basePath}}/public/icons/checkbox-svgrepo-com.svg" alt="checked" class="icon-check"/>
+          {{mas_name}} 
+          ถนนสาย
+          <div class="underline">{{road}}</div>
+          บริเวณ
+          <div class="underline">{{area}}</div>
+        </div>
+      {{else}}
+        <div class="item-complain parent-underline">
+          <img src="{{basePath}}/public/icons/checkbox-svgrepo-com.svg" alt="checked" class="icon-check"/>
+          {{mas_name}} บริเวณ
+          <div class="underline">{{area}}</div>
+        </div>
+      {{/if}}
+    {{/if}}
+  {{/each}}
+  </div>
+
+  <div class="parent-underline" style="position: relative; top: -5px">
+    <strong>แจ้ง สำนัก/กอง</strong> 
+    <div class="underline">{{complain_data.deptname}}</div>
+  </div>
+
+  <br>
+
+  <table style="width: 100%; position: relative; top: -10px">
+    <tr>
+      <td style="width: 50%">&nbsp;</td>
+      <td style="width: 50%">
+        {{#if director_by}}
+        <div class="text-center" style="font-size: 12pt;">.....................................................</div>
+        <div class="text-center" style="font-size: 12pt;">{{director_by}}</div>
+        <div class="text-center" style="font-size: 12pt;">{{director_position}}</div>
+        <div></div>
+        {{else}}
+        <div class="text-center " style="font-size: 12pt;">............................................................................................</div>
+        <div class="text-center" style="font-size: 12pt;">............................................................................................</div>
+        <div class="text-center" style="font-size: 12pt;">............................................................................................</div>
+        {{/if}}
+      </td>
+    </tr>
+  </table>
+    </div>
+
+  <br>
+  <div style="position: relative; top: -50px">
+        <p style="text-align: left; position: relative; top: 2px">
+        <strong>**<span style="text-decoration: underline;"> โทร.</span> ๐ ๒๕๕๑ ๕๒๐๐ </strong>
+        <strong><span style="text-decoration: underline;">Email :</span> hotline๑๑๔๖@hotmail.com **</strong>
+      </p>
+
+<div style="position: relative; top: -10px">
+  <hr class="text-line">
+  <div class="column newPage" ><strong>๓.คำชี้แจง/พร้อมผลปฏิบัติการ/รูปภาพประกอบ</strong></div>
+  <br>
+  <div class="underline">&nbsp;</div>
+  <div class="underline">&nbsp;</div>
+  <div class="underline">&nbsp;</div>
+
+
+  </div>
+
+  </div>
+  {{!-- <br> --}}
+  <table style="width: 100%; position: relative; top: -55px">
+    <tr>
+      <td style="width: 55%; text-align: right; vertical-align: top; font-size: 12pt;">ผู้รายงาน</td>
+      <td style="width: 35%;">
+        <div class="text-center"><div class="underline">&nbsp;</div></div>
+        <div class="text-center"><div class="underline">
+          (&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</div></div>
+        <div class="text-center"><div class="underline">&nbsp;</div></div>
+        <div><div class="underline" style="padding-bottom: 0; font-size: 12pt;">โทร. </div></div>
+      </td>
+      <td style="width: 10%;">&nbsp;</td>
+
+    </tr>
+  </table>
+
+  {{!-- <br> --}}
+  <table style="width: 100%; position: relative; top: -60px">
+    <tr>
+      <td style="width: 55%; text-align: right; vertical-align: top; font-size: 12pt;">ผส./ผส.ทช./ผอ.ขทช./ผอ.บทช.</td>
+      <td style="width: 35%;">
+        <div class="text-center"><div class="underline">&nbsp;</div></div>
+        <div class="text-center" style="position: relative; top: 0px"><div class="underline">
+          (&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;)</div></div></div></div>
+        <div class="text-center" style="position: relative; top: 0px"><div class="underline">&nbsp;</div></div>
+      </td>
+      <td style="width: 10%;">&nbsp;</td>
+    </tr>
+  </table>
+
+</body>
+</html>

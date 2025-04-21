@@ -1,0 +1,456 @@
+<html>
+
+<head>
+  <title>หนังสือภายใน เรียนอธิการบดี</title>
+  <style>
+    @font-face {
+      font-family: 'THSarabunIT9';
+      src: url('{{basePath}}/public/fonts/THSarabunIT๙.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+
+    }
+
+    @font-face {
+      font-family: 'THSarabunIT9';
+      src: url('{{basePath}}/public/fonts/THSarabunIT๙ BoldItalic.ttf') format('truetype');
+      font-weight: bold;
+      font-style: italic;
+
+    }
+
+    @font-face {
+      font-family: 'THSarabunIT9';
+      src: url('{{basePath}}/public/fonts/THSarabunIT๙ Italic.ttf') format('truetype');
+      font-weight: normal;
+      font-style: italic;
+
+    }
+
+    @font-face {
+      font-family: 'THSarabunIT9';
+      src: url('{{basePath}}/public/fonts/THSarabunIT๙ Bold.ttf') format('truetype');
+      font-weight: bold;
+      font-style: normal;
+    }
+
+    body {
+      font-family: 'THSarabunIT9', sans-serif;
+      font-size: 16pt;
+    }
+
+    .left-align {
+      text-align: left;
+      margin-left: 5px;
+    }
+
+    .right-align {
+      text-align: right;
+      margin-right: 5px;
+    }
+
+    .text-head {
+      text-align: center;
+      font-weight: bold;
+      font-size: 29pt;
+    }
+
+    .text-subhead {
+      font-size: 20pt;
+    }
+
+    .paragraph {
+      text-indent: 95px;
+      text-align: justify;
+    }
+
+    .column {
+      float: left;
+      width: 50%;
+      align-items: center;
+    }
+
+    .center {
+      text-align: center;
+    }
+
+    .grid-item {
+      display: grid;
+      grid-template-columns: auto auto auto;
+    }
+
+    .grid-qrcode {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      /* Assuming 4 equal columns */
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      border:1px solid red
+    }
+
+    .qrcode {
+      margin-left: 30px;
+       border:0px solid red
+    }
+
+    .text-line {
+      border: 1px solid black;
+    }
+
+    .column-4 {
+      float: left;
+      width: 25%;
+    }
+
+    /* Clear floats after the columns */
+    .row:after {
+      content: "";
+      display: table;
+      clear: both;
+    }
+
+    .ballot-box {
+      font-family: 'THSarabunIT9', sans-serif;
+      font-size: 25px;
+      font-weight: bold;
+      margin-right: 5px;
+      width: 25px;
+      height: 25px;
+    }
+
+    .ballot-box-check:after {
+      content: ' \2611';
+    }
+
+    .underline {
+
+      width: calc(100% - 100px);
+      width: calc(100%);
+      border-bottom: 1px dotted black;
+      margin-left: 3px;
+      margin-right: 3px;
+      flex: 1;
+    }
+
+    ul {
+      list-style-type: none;
+      padding-left: 0;
+    }
+
+    li p {
+      display: inline-block;
+    }
+
+    .item-complain {
+        {
+          {
+          !-- margin-left: 25px;
+          --
+        }
+      }
+    }
+
+    .item-complain> :first-child {
+      margin-right: 10px;
+    }
+
+
+
+    .icon-check {
+      width: 16px;
+    }
+
+    table,
+    td {
+      font-family: 'THSarabunIT9', sans-serif;
+      font-size: 16pt;
+    }
+
+    .parent-underline {
+      display: flex;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid;
+      text-align: center;
+    }
+
+    table-sign {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      display: table-header-group;
+      break-inside: avoid;
+    }
+
+    tfoot {
+      display: table-footer-group;
+      break-inside: avoid;
+    }
+
+    thead>tr>td {
+      text-align: center;
+      border: 1px solid;
+    }
+
+    th,
+    td {
+      border: 1px solid;
+    }
+
+    tbody {
+      border-left: 1px solid;
+      border-right: 1px solid;
+    }
+
+    .logo-relative {
+      position: relative;
+    }
+
+    .logo-absolute {
+      position: absolute;
+    }
+
+
+    .main-name-container {
+      border: 0px solid blue;
+      width: 100%;
+      display: flex;
+      justify-content: end;
+
+    }
+
+    .name-container {
+      border: 0px solid red;
+      width: 98%;
+      text-align: left;
+
+    }
+
+    .way-width{
+      width: 45%;
+    }
+
+    
+  </style>
+</head>
+
+<body>
+  <div class="logo-relative" style=" margin:0">
+    <img src="{{basePath}}/public/image/garuda.png" alt="logo" style="width: 60px; height: 60px; "
+      class="logo-absolute">
+    <p class="text-head" style="margin:0; padding-top:17px;">บันทึกข้อความ{{source_name}}</p>
+  </div>
+
+
+
+  <p style="margin-top: 0;margin-bottom:0;letter-spacing: -0.1px;"><strong class="text-subhead">ส่วนราชการ</strong>
+    สำนักงานเลขานุการกรม
+    กลุ่มบริหารข้อมูลข่าวสารและเรื่องราวร้องทุกข์โทร. ๐ ๒๕๕๑ ๕๒๐๐</p>
+
+  <div>
+    {{!-- Dinamic Next Phrase --}}
+    <div class="column"><strong class="text-subhead">ที่</strong> </div>
+    <div class="column"><strong class="text-subhead">วันที่</strong> </div>
+  </div>
+
+  <p style="white-space: pre-wrap;"><strong class="text-subhead">เรื่อง </strong>รายงานและสรุปผลการดำเนินงานเรื่องร้องเรียนร้องทุกข์ ประจำเดือน{{toThaiWord year_month}}</p>
+
+
+
+  <p style="white-space: pre-wrap;">เรียน อธิบดี (ผ่านรองอธิบดี ด้านบริหารและวิชาการ)</p>
+
+  <p class="paragraph">
+    ตามที่สำนักงานเลขานุการกรม ได้รับมอบหมายภารกิจให้ดำเนินการบริหารจัดการเรื่องร้องเรียนร้องทุกข์
+    ผ่านช่องทาง {{thiaNumber sourceTypeAllText}} เพื่ออำนวยความสะดวกให้แก่ประชาชนในการแจ้งข้อมูลเรื่องร้องเรียนต่าง ๆ
+    ที่เกี่ยวกับทางหลวงชนบท นั้น
+  </p>
+  <p class="paragraph">
+    สำนักงานเลขานุการกรม ขอรายงานและสรุปผลการดำเนินงานเรื่องร้องเรียนร้องทุกข์ ตามตารางสรุป
+    เรื่องร้องเรียนร้องทุกข์ ประจำเดือน{{toThaiWord year_month}} ดังนี้
+  </p>
+  <p class="paragraph">
+    ๑. ตารางสรุปเรื่องร้องเรียนร้องทุกข์ผ่านช่องทางต่าง ๆ
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th rowspan="2" style="width:5%">ที่</th>
+        <td rowspan="2" style="width:40%">ช่องทาง</td>
+        <td colspan="2">รวมทั้งสิ้น</td>
+        <td rowspan="2">อยู่ระหว่าง<br>ดำเนินการ<br>(เรื่อง)</td>
+        <td colspan="2">ยุติเรื่อง</td>
+      </tr>
+      <tr>
+        <td>จำนวน<br>(เรื่อง)</td>
+        <td>คิดเป็น<br>ร้อยละ</td>
+        <td>จำนวน<br>(เรื่อง)</td>
+        <td>คิดเป็น<br>ร้อยละ</td>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each dataSummarySource}}
+      <tr>
+        {{#ifEquals code '0'}}
+        <td colspan="2" style="text-align: center">{{name}}</td>
+        {{else}}
+        <td>{{thiaNumber code}}</td>
+        <td class="way-width">
+          <div class="main-name-container">
+            <div class="name-container">
+              {{thiaNumber name}}
+            </div>
+          </div>
+        </td>
+        {{/ifEquals}}
+        <td>{{thiaNumber count_summary}}</td>
+        <td style="text-align: center">{{thiaNumber percent_summary}}</td>
+        <td>{{thiaNumber count_progress}}</td>
+        <td>{{thiaNumber count_terminate}}</td>
+        <td style="text-align: center">{{thiaNumber percent_terminate}}</td>
+      </tr>
+      {{/each}}
+
+    </tbody>
+  </table>
+  <thead>
+    <p class="paragraph">
+      ๒. ตารางสรุปเรื่องร้องเรียนร้องทุกข์แยกตามประเภท
+    </p>
+    <table>
+
+      <tr>
+        <th rowspan="2" style="width:5%">ที่</th>
+        <td rowspan="2" style="width:40%">ช่องทาง</td>
+        <td colspan="2">รวมทั้งสิ้น</td>
+        <td rowspan="2">อยู่ระหว่าง<br>ดำเนินการ<br>(เรื่อง)</td>
+        <td colspan="2">ยุติเรื่อง</td>
+      </tr>
+      <tr>
+        <td>จำนวน<br>(เรื่อง)</td>
+        <td>คิดเป็น<br>ร้อยละ</td>
+        <td>จำนวน<br>(เรื่อง)</td>
+        <td>คิดเป็น<br>ร้อยละ</td>
+      </tr>
+  </thead>
+  <tbody>
+    {{#each dataSummaryComplaint}}
+    <tr>
+      {{#ifEquals code '0'}}
+      <td colspan="2" style="text-align: center">{{name}}</td>
+      {{else}}
+      <td>{{thiaNumber code}}</td>
+      <td class="way-width">
+        <div class="main-name-container">
+          <div class="name-container">
+            {{name}}
+          </div>
+        </div>
+      </td>
+
+      {{/ifEquals}}
+      <td>{{thiaNumber count_summary}}</td>
+      <td style="text-align: center">{{thiaNumber percent_summary}}</td>
+      <td>{{thiaNumber count_progress}}</td>
+      <td>{{thiaNumber count_terminate}}</td>
+      <td style="text-align: center">{{thiaNumber percent_terminate}}</td>
+    </tr>
+    {{/each}}
+  </tbody>
+  </table>
+
+  <p class="paragraph">
+    ๓. ตารางสรุปเรื่องร้องเรียนร้องทุกข์แยกตามหน่วยงานรับผิดชอบ ดังนี้
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th rowspan="2" style="width:5%">ที่</th>
+        <td rowspan="2" style="width:40%">ช่องทาง</td>
+        <td colspan="2">รวมทั้งสิ้น</td>
+        <td rowspan="2">อยู่ระหว่าง<br>ดำเนินการ<br>(เรื่อง)</td>
+        <td colspan="2">ยุติเรื่อง</td>
+      </tr>
+      <tr>
+        <td>จำนวน<br>(เรื่อง)</td>
+        <td>คิดเป็น<br>ร้อยละ</td>
+        <td>จำนวน<br>(เรื่อง)</td>
+        <td>คิดเป็น<br>ร้อยละ</td>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each dataSummaryDepartment}}
+      <tr>
+        {{#ifEquals code '0'}}
+        <td colspan="2" style="text-align: center">{{thiaNumber name}}</td>
+        {{else}}
+        <td>{{thiaNumber code}}</td>
+        <td class="way-width">
+          <div class="main-name-container">
+            <div class="name-container">
+              {{thiaNumber name}}
+            </div>
+          </div>
+          {{/ifEquals}}
+        <td>{{thiaNumber count_summary}}</td>
+        <td style="text-align: center">{{thiaNumber percent_summary}}</td>
+        <td>{{thiaNumber count_progress}}</td>
+        <td>{{thiaNumber count_terminate}}</td>
+        <td style="text-align: center">{{thiaNumber percent_terminate}}</td>
+      </tr>
+      {{/each}}
+    </tbody>
+  </table>
+  <tfoot>
+    <p class="paragraph">
+      ในการนี้ สำนักงานเลขานุการกรมได้ดำเนินการบริหารจัดการเรื่องร้องเรียนร้องทุกข์จนได้ข้อยุติ จำนวน {{thiaNumber
+      countTerminate}} เรื่อง
+      คิดเป็นร้อยละ {{thiaNumber percentTerminate}} และอยู่ระหว่างดำเนินการ {{thiaNumber countProgress}} เรื่อง
+      คิดเป็นร้อยละ {{thiaNumber percentProgress}}
+      โดยมีเรื่องร้องเรียนร้องทุกข์ผ่านช่องทาง {{thiaNumber topSourceType}} มากที่สุดตามลำดับ
+      ซึ่งเป็นเรื่องร้องเรียนร้องทุกข์ประเภท
+      {{thiaNumber topComplaint}} มากที่สุดตามลำดับ เป็นเรื่องร้องเรียนของหน่วยงานรับผิดชอบของ
+      {{thiaNumber topDepartment}} มากที่สุดตามลำดับ รายละเอียดตาม QR Code ที่แนบมาพร้อมนี้
+    </p>
+    <p class="paragraph">จึงเรียนมาเพื่อโปรดทราบ</p>
+
+
+    <br>
+
+            <div style="display: grid; justify-items: right; width: 100%;">
+        <div style="width: 50%; display: grid; justify-items: center;">
+          <div>.....................................................</div>
+          <div>({{certificateName}})</div>
+          <div>{{certificateRole}}</div>
+        </div>
+      </div>
+    {{!-- <div style="border-style: solid; width: 50%; justify-self: right">
+      <tr>
+        <td style="width: 50%">&nbsp;</td>
+        <td style="width: 50%">
+          <div style="">
+          <div style="justify-self: center;">.....................................................</div>
+          <div style="justify-self: center;">({{certificateName}})</div>
+          <div style="justify-self: center;">{{certificateRole}}</div>
+          </div>
+        </td>
+      </tr>
+    </div> --}}
+
+    <div>
+      <img class="qrcode" src="{{qrCodeImage}}" alt="QR Code" style="width: 100px; height: 100px; ">
+    </div>
+    <div style="margin-top: -28px;">
+      <p>QR Code สรุปเรื่องร้องเรียน<br>ประจำเดือน{{toThaiWord year_month}}</p>
+    </div>
+
+  </tfoot>
+
+</body>
+
+</html>

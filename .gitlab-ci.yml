@@ -1,0 +1,9 @@
+image: losociety/nodejs-mongo:1
+
+stages:
+  - deploy
+
+update:
+  stage: deploy
+  script:
+    - sshpass -p "${WTS_UAT_SSH_PASSWORD}" ssh -oStrictHostKeyChecking=no "${WTS_UAT_SSH_USERNAME}@${WTS_UAT_SSH_HOST}" "bash /opt/script_ci/deploy_cds_service.sh"
