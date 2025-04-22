@@ -468,6 +468,14 @@ export class DashboardService {
         (
         select status, count(notified_office) as notified_office_count, notified_office, d.deptname from tbl_complaints c 
         inner join tbl_department d on c.notified_office = d.deptofficeno
+        where date(receive_at) = ? and status = '1' and c.deleted_at is null and sub_notified_office is NULL
+        group by notified_office
+        order by d.deptofficeno 
+        )
+        union
+        (
+        select status, count(notified_office) as notified_office_count, notified_office, d.deptname from tbl_complaints c 
+        inner join tbl_department d on c.notified_office = d.deptofficeno
         where date(progress_at) = ? and status = '2' and c.deleted_at is null and sub_notified_office is NULL
         group by notified_office
         order by d.deptofficeno 
@@ -479,6 +487,15 @@ export class DashboardService {
         where date(terminate_at) = ? and status = '3' and c.deleted_at is null and sub_notified_office is NULL
         group by notified_office
         order by d.deptofficeno
+        )
+        union
+                (
+     select status, count(sub_notified_office) as notified_office_count, sub_notified_office, d.deptname
+      from tbl_complaints c 
+      inner join tbl_department d on c.sub_notified_office = d.deptofficeno
+      where date(receive_at) = ? and status = '1' and c.deleted_at is null and sub_notified_office is not NULL 
+      group by notified_office
+      order by d.deptofficeno 
         )
         union
       (
@@ -500,27 +517,41 @@ export class DashboardService {
       )
       `;
 
-      const replacements = [dateSearch, dateSearch, dateSearch, dateSearch];
+      const replacements = [dateSearch, dateSearch, dateSearch, dateSearch,dateSearch, dateSearch];
       const result = await this.sequelize.query(sql, {
         replacements,
       });
       const data = result ? result[0] : [];
-
+      console.log({data});
+      
       let process_series: number[] = [];
       let close_series: number[] = [];
+      let recive_series: number[] = [];
       let sum_series: number[] = [];
       let labels: string[] = [];
 
       const new_data = deptOfficeNo.map(async (item) => {
         let office_name;
 
-        let found_process = find(data, { notified_office: item + '' });
+        let found_process = find(data, { notified_office: item + '', status: '2', });
 
         let found_close = find(data, {
           notified_office: item + '',
           status: '3',
         });
-        if (!found_process && !found_close) return;
+
+        let found_recive = find(data, {notified_office: item + '', status: '1', })
+        if (!found_process && !found_close && !found_recive) return;
+
+        if(found_recive){
+          recive_series.push(recive_series['notified_office_count'])
+          if( !office_name){
+            office_name =  found_recive['deptname']
+          }
+        }else {
+          recive_series.push(0);
+          // return;
+        }
 
         if (found_process) {
           process_series.push(found_process['notified_office_count']);
@@ -545,7 +576,7 @@ export class DashboardService {
 
         sum_series.push(
           process_series[process_series.length - 1] +
-            close_series[close_series.length - 1],
+            close_series[close_series.length - 1] +  recive_series[recive_series.length -1],
         );
 
         if (office_name) {
@@ -559,12 +590,14 @@ export class DashboardService {
         labels.length > 0 &&
         process_series &&
         close_series &&
+        recive_series&&
         sum_series
       ) {
         let combinedData = labels.map((label, index) => ({
           label,
           process: process_series[index],
           close: close_series[index],
+          recive: recive_series[index],
           sum: sum_series[index],
         }));
 
@@ -577,6 +610,7 @@ export class DashboardService {
         // Update the series and labels with the sorted values
         labels = combinedData.map((item) => item.label);
         process_series = combinedData.map((item) => item.process);
+        recive_series = combinedData.map((item) => item.recive )
         close_series = combinedData.map((item) => item.close);
         sum_series = combinedData.map((item) => item.sum);
       } else {
@@ -584,6 +618,7 @@ export class DashboardService {
           'Labels or one of the series arrays are undefined or empty:',
           {
             labels,
+            recive_series,
             process_series,
             close_series,
             sum_series,
@@ -592,6 +627,7 @@ export class DashboardService {
       }
       return {
         series: [
+          {name: 'รับเรื่อง' , data: recive_series},
           { name: 'ดำเนินการอยู่', data: process_series },
           { name: 'ยุติ', data: close_series },
           { name: 'รวม', data: sum_series },

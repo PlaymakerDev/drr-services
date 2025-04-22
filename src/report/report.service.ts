@@ -308,153 +308,238 @@ export class ReportService {
   // Report === แบบรับเรื่องร้องเรียน ผ่านสายด่วน 1146
   // กระดาษแนวตั้ง
   async getReport(cid: string, authHeader: string, user): Promise<any> {
-    try {
-
-      const complain_data = await this.getComplainById(Number(cid));
-
-      const field_recive_file = ['attachment_received1','attachment_received2','attachment_received3','attachment_received4','attachment_received5']
-      const field_closed_file = ['attachment_closed1', 'attachment_closed2','attachment_closed3','attachment_closed4','attachment_closed5']
-      const absolutePath = path.resolve('src/resource/template/report1.html');
-
+    try {const complain_data = await this.getComplainById(Number(cid));
+      const field_recive_file = ['attachment_received1','attachment_received2','attachment_received3','attachment_received4','attachment_received5'];
+      const field_closed_file = ['attachment_closed1', 'attachment_closed2','attachment_closed3','attachment_closed4','attachment_closed5'];
+  
+      // Check if there are any attachments
+      let hasAttachment = field_recive_file.some(field => 
+        complain_data[field] !== undefined && complain_data[field] !== null && complain_data[field] !== ''
+      );
+      let hasCloseAttachment = field_closed_file.some(field => 
+        complain_data[field] !== undefined && complain_data[field] !== null && complain_data[field] !== ''
+      );
+  
+      // Initialize PDF collections for each section
+      const mainPdfFiles = [];
+      const receivedPdfFiles = [];
+      const closedPdfFiles = [];
+  
+      // Process received files to separate PDFs from other files
+      let attachmentsHtml = '<div style="page-break-before: always; padding: 20px;"><h4>ไฟล์ประกอบการร้องเรียน</h4>';
+      let haveAttach = false;
+      
+      for (let index = 0; index < field_recive_file.length; index++) {
+        const element = field_recive_file[index];
+        const filePath = complain_data[element];
+        
+        if (filePath) {
+          const fileExt = path.extname(filePath).toLowerCase();
+          
+          // If it's a PDF, save it for later concatenation
+          if (fileExt === '.pdf') {
+            receivedPdfFiles.push({
+              path: __dirname + '/../../' + filePath,
+              name: path.basename(filePath)
+            });
+            continue; // Skip adding to HTML
+          }
+          
+          haveAttach = true;
+          const fileData = await fs.promises.readFile(__dirname + '/../../' + filePath);
+          const fileName = path.basename(filePath);
+          
+          if (['.jpg', '.jpeg', '.png', '.gif'].includes(fileExt)) {
+            const base64Data = fileData.toString('base64');
+            const mimeType = fileExt === '.jpg' || fileExt === '.jpeg' ? 'image/jpeg' : 
+                            fileExt === '.png' ? 'image/png' : 'image/gif';
+            
+            attachmentsHtml += `
+              <div style="margin-bottom: 20px;">
+                <img src="data:${mimeType};base64,${base64Data}" style="max-width: 100%; max-height: 300px;" />
+              </div>
+            `;
+          } else if (['.txt', '.md', '.html', '.css', '.js'].includes(fileExt)) {
+            const textContent = fileData.toString('utf-8');
+            attachmentsHtml += `
+              <div style="margin-bottom: 20px;">
+                <pre style="background-color: #f5f5f5; padding: 10px; overflow-x: auto; max-height: 300px;">${textContent}</pre>
+              </div>
+            `;
+          } else {
+            attachmentsHtml += `
+              <div style="margin-bottom: 20px;">
+                <p>${fileName} (File attachment)</p>
+              </div>
+            `;
+          }
+        }
+      }
+      attachmentsHtml += '</div>';
+      
+      let closeAttachmentsHtml = '<div style="page-break-before: always; padding: 20px;"><h4>ไฟล์ประกอบการดำเนินงาน</h4>';
+      let haveCloseAttach = false;
+      
+      for (let index = 0; index < field_closed_file.length; index++) {
+        const element = field_closed_file[index];
+        const filePath = complain_data[element];
+        
+        if (filePath) {
+          const fileExt = path.extname(filePath).toLowerCase();
+          
+          if (fileExt === '.pdf') {
+            closedPdfFiles.push({
+              path: __dirname + '/../../' + filePath,
+              name: path.basename(filePath)
+            });
+            continue; // Skip adding to HTML
+          }
+          
+          haveCloseAttach = true;
+          const fileData = await fs.promises.readFile(__dirname + '/../../' + filePath);
+          const fileName = path.basename(filePath);
+          
+          if (['.jpg', '.jpeg', '.png', '.gif'].includes(fileExt)) {
+            const base64Data = fileData.toString('base64');
+            const mimeType = fileExt === '.jpg' || fileExt === '.jpeg' ? 'image/jpeg' : 
+                            fileExt === '.png' ? 'image/png' : 'image/gif';
+            
+            closeAttachmentsHtml += `
+              <div style="margin-bottom: 20px;">
+                <img src="data:${mimeType};base64,${base64Data}" style="max-width: 100%; max-height: 300px;" />
+              </div>
+            `;
+          } else if (['.txt', '.md', '.html', '.css', '.js'].includes(fileExt)) {
+            const textContent = fileData.toString('utf-8');
+            closeAttachmentsHtml += `
+              <div style="margin-bottom: 20px;">
+                <pre style="background-color: #f5f5f5; padding: 10px; overflow-x: auto; max-height: 300px;">${textContent}</pre>
+              </div>
+            `;
+          } else {
+            closeAttachmentsHtml += `
+              <div style="margin-bottom: 20px;">
+                <p>${fileName} (File attachment)</p>
+              </div>
+            `;
+          }
+        }
+      }
+      closeAttachmentsHtml += '</div>';
+  
+      // Launch browser and generate the three sections
       const browser = await puppeteer.launch({
         headless: true,
         args: ['--no-sandbox', "--disabled-setupid-sandbox"]
       });
-
+      
       const page = await browser.newPage();
-
       await page.setExtraHTTPHeaders({
         Authorization: authHeader,
         user: JSON.stringify(user)
       });
-      await page.goto(`${process.env.REPORT_SERVER}/api/v1/report/receive_complaint?cid=${cid}`);
-      let attachmentsHtml = '<div style="page-break-before: always; padding: 20px;"><h4>ไฟล์ประกอบการร้องเรียน</h4>';
-      let haveAttach =  false
-      let closeAttachmentsHtml = '<div style="page-break-before: always; padding: 20px;"><h4>ไฟล์ประกอบการร้องเรียน</h4>';
-      let haveCloseAttach = false
-      for (let index = 0; index < field_recive_file.length; index++) {
-        const element = field_recive_file[index];
-        const filePaths = complain_data[element]
-        if (filePaths) {
-            haveAttach = true
-            const fileData = await fs.promises.readFile(__dirname +'/../../' +  filePaths);
-            const fileName = path.basename(filePaths);
-            const fileExt = path.extname(filePaths).toLowerCase();
-            
-            if (['.jpg', '.jpeg', '.png', '.gif'].includes(fileExt)) {
-              // For images
-              const base64Data = fileData.toString('base64');
-              const mimeType = fileExt === '.jpg' || fileExt === '.jpeg' ? 'image/jpeg' : 
-                               fileExt === '.png' ? 'image/png' : 'image/gif';
-              
-              attachmentsHtml += `
-                <div style="margin-bottom: 20px;">
-                  <img src="data:${mimeType};base64,${base64Data}" style="max-width: 100%; max-height: 300px;" />
-                </div>
-              `;
-            } else if (['.pdf'].includes(fileExt)) {
-             
-              attachmentsHtml += `
-                <div style="margin-bottom: 20px;">
-                  <a href="#">View PDF</a>
-                </div>
-              `;
-            } else if (['.txt', '.md', '.html', '.css', '.js'].includes(fileExt)) {
-              const textContent = fileData.toString('utf-8');
-              attachmentsHtml += `
-                <div style="margin-bottom: 20px;">
-                  <pre style="background-color: #f5f5f5; padding: 10px; overflow-x: auto; max-height: 300px;">${textContent}</pre>
-                </div>
-              `;
-            } else {
-              attachmentsHtml += `
-                <div style="margin-bottom: 20px;">
-                  <p>${fileName} (File attachment)</p>
-                </div>
-              `;
-          }
-        }
-      }
-     
-      for (let index = 0; index < field_closed_file.length; index++) {
-        const element = field_closed_file[index];
-        const filePaths = complain_data[element]
-        if (filePaths) {
-            haveCloseAttach = true
-            const fileData = await fs.promises.readFile(__dirname +'/../../' +  filePaths);
-            const fileName = path.basename(filePaths);
-            const fileExt = path.extname(filePaths).toLowerCase();
-            
-            if (['.jpg', '.jpeg', '.png', '.gif'].includes(fileExt)) {
-              // For images
-              const base64Data = fileData.toString('base64');
-              const mimeType = fileExt === '.jpg' || fileExt === '.jpeg' ? 'image/jpeg' : 
-                               fileExt === '.png' ? 'image/png' : 'image/gif';
-              
-              closeAttachmentsHtml += `
-                <div style="margin-bottom: 20px;">
-                  <img src="data:${mimeType};base64,${base64Data}" style="max-width: 100%; max-height: 300px;" />
-                </div>
-              `;
-            } else if (['.pdf'].includes(fileExt)) {
-             
-              closeAttachmentsHtml += `
-                <div style="margin-bottom: 20px;">
-                  <a href="#">View PDF</a>
-                </div>
-              `;
-            } else if (['.txt', '.md', '.html', '.css', '.js'].includes(fileExt)) {
-              const textContent = fileData.toString('utf-8');
-              closeAttachmentsHtml += `
-                <div style="margin-bottom: 20px;">
-                  <pre style="background-color: #f5f5f5; padding: 10px; overflow-x: auto; max-height: 300px;">${textContent}</pre>
-                </div>
-              `;
-            } else {
-              closeAttachmentsHtml += `
-                <div style="margin-bottom: 20px;">
-                  <p>${fileName} (File attachment)</p>
-                </div>
-              `;
-          }
-        }
-      }
       
-      attachmentsHtml += '</div>';
-      closeAttachmentsHtml += '</div>'
-
-      if(haveAttach){
-        await page.evaluate((html) => {
-          const container = document.body;
-          const div = document.createElement('div');
-          div.innerHTML = html;
-          container.appendChild(div);
-        }, attachmentsHtml);
-      }
-      if(haveCloseAttach){
-        await page.evaluate((html) => {
-          const container = document.body;
-          const div = document.createElement('div');
-          div.innerHTML = html;
-          container.appendChild(div);
-        }, closeAttachmentsHtml);
-      }
-
+      await page.goto(`${process.env.REPORT_SERVER}/api/v1/report/receive_complaint?cid=${cid}`);
       await page.emulateMediaType('screen');
-
-      const buffer = await page.pdf({
-        // path: 'src/export/example.pdf', 
+      const mainBuffer = await page.pdf({
         format: 'A4',
         landscape: false,
         margin: { top: '50px', right: '50px', bottom: '10px', left: '50px' },
         printBackground: false,
       });
-
+      
+      let receivedBuffer = null;
+      if (haveAttach) {
+        await page.setContent(attachmentsHtml, { waitUntil: 'domcontentloaded' });
+        await page.emulateMediaType('screen');
+        receivedBuffer = await page.pdf({
+          format: 'A4',
+          landscape: false,
+          margin: { top: '50px', right: '50px', bottom: '10px', left: '50px' },
+          printBackground: false,
+        });
+      }
+      
+      let closedBuffer = null;
+      if (haveCloseAttach) {
+        await page.setContent(closeAttachmentsHtml, { waitUntil: 'domcontentloaded' });
+        await page.emulateMediaType('screen');
+        closedBuffer = await page.pdf({
+          format: 'A4',
+          landscape: false,
+          margin: { top: '50px', right: '50px', bottom: '10px', left: '50px' },
+          printBackground: false,
+        });
+      }
+      
       await browser.close();
-
-      console.log(`Here's your PDF!.`);
-      return buffer;
-    } catch (e) {
+      
+      // Now combine all PDFs using pdf-lib
+      const { PDFDocument } = require('pdf-lib');
+      const finalPdfDoc = await PDFDocument.create();
+      
+      // 1. Add main form and its PDF attachments
+      {
+        const mainPdfDoc = await PDFDocument.load(mainBuffer);
+        const copiedPages = await finalPdfDoc.copyPages(mainPdfDoc, mainPdfDoc.getPageIndices());
+        copiedPages.forEach(page => finalPdfDoc.addPage(page));
+        
+        // Add main PDF attachments if any
+        for (const pdfFile of mainPdfFiles) {
+          try {
+            const pdfBytes = await fs.promises.readFile(pdfFile.path);
+            const attachmentPdf = await PDFDocument.load(pdfBytes);
+            const attachmentPages = await finalPdfDoc.copyPages(attachmentPdf, attachmentPdf.getPageIndices());
+            attachmentPages.forEach(page => finalPdfDoc.addPage(page));
+          } catch (error) {
+            console.error(`Error processing PDF file ${pdfFile.name}:`, error);
+          }
+        }
+      }
+      
+      // 2. Add received attachments and their PDF attachments
+      if (receivedBuffer) {
+        const receivedPdfDoc = await PDFDocument.load(receivedBuffer);
+        const copiedPages = await finalPdfDoc.copyPages(receivedPdfDoc, receivedPdfDoc.getPageIndices());
+        copiedPages.forEach(page => finalPdfDoc.addPage(page));
+        
+        // Add received PDF attachments
+        for (const pdfFile of receivedPdfFiles) {
+          try {
+            const pdfBytes = await fs.promises.readFile(pdfFile.path);
+            const attachmentPdf = await PDFDocument.load(pdfBytes);
+            const attachmentPages = await finalPdfDoc.copyPages(attachmentPdf, attachmentPdf.getPageIndices());
+            attachmentPages.forEach(page => finalPdfDoc.addPage(page));
+          } catch (error) {
+            console.error(`Error processing PDF file ${pdfFile.name}:`, error);
+          }
+        }
+      }
+      
+      // 3. Add closed attachments and their PDF attachments
+      if (closedBuffer) {
+        const closedPdfDoc = await PDFDocument.load(closedBuffer);
+        const copiedPages = await finalPdfDoc.copyPages(closedPdfDoc, closedPdfDoc.getPageIndices());
+        copiedPages.forEach(page => finalPdfDoc.addPage(page));
+        
+        // Add closed PDF attachments
+        for (const pdfFile of closedPdfFiles) {
+          try {
+            const pdfBytes = await fs.promises.readFile(pdfFile.path);
+            const attachmentPdf = await PDFDocument.load(pdfBytes);
+            const attachmentPages = await finalPdfDoc.copyPages(attachmentPdf, attachmentPdf.getPageIndices());
+            attachmentPages.forEach(page => finalPdfDoc.addPage(page));
+          } catch (error) {
+            console.error(`Error processing PDF file ${pdfFile.name}:`, error);
+          }
+        }
+      }
+      
+      // Save the final combined PDF
+      const finalPdfBytes = await finalPdfDoc.save();
+      console.log(`Here's your PDF with all sections and attachments combined!`);
+      return Buffer.from(finalPdfBytes); }
+     catch (e) {
       console.error(e);
     }
     return;
