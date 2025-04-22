@@ -34,8 +34,7 @@ export class DashboardService {
       if (!dateSearch) {
         dateSearch = new Date().toISOString().substring(0, 10);
       }
-      const sql = 
-      `
+      const sql = `
         select c.source_type, count(c.source_type) as source_type_count, m.mas_name as source_name from tbl_complaints c
         inner join tbl_master m on m.mas_code = c.source_type and m.mas_group_code = 4
         where date(c.receive_at) = ? and c.deleted_at is null
@@ -44,7 +43,7 @@ export class DashboardService {
         LIMIT 3
       `;
       const data = await this.sequelize.query(sql, {
-        replacements: [dateSearch]
+        replacements: [dateSearch],
       });
       return data ? data[0] : [];
     } catch (e) {
@@ -56,22 +55,37 @@ export class DashboardService {
   async getTop3Progress(dateSearch?: string): Promise<any> {
     try {
       let current_date = new Date();
-  
-    
+
       if (dateSearch) {
         current_date = new Date(Date.parse(dateSearch));
       }
-  
-    
-      const start_date2 = new Date(current_date.getFullYear(), current_date.getMonth() - 2, 1);
-      const end_date = new Date(current_date.getFullYear(), current_date.getMonth() + 1, 0);
-  
-    
+
+      const start_date2 = new Date(
+        current_date.getFullYear(),
+        current_date.getMonth() - 2,
+        1,
+      );
+      const end_date = new Date(
+        current_date.getFullYear(),
+        current_date.getMonth() + 1,
+        0,
+      );
+
       const start_date2_str = start_date2.toISOString().substring(0, 10);
       const current_date2 = end_date.toISOString().substring(0, 10);
-  
-    
+
       const sql = `
+       (SELECT year_and_month, COUNT(year_and_month) AS year_and_month_count, status FROM (
+          SELECT DATE_FORMAT(receive_at, '%Y-%m') AS year_and_month, status FROM tbl_complaints
+          WHERE status = '2'
+          AND receive_at BETWEEN ? AND ?
+          AND deleted_at IS NULL
+        ) AS complaints_count
+        GROUP BY year_and_month
+        ORDER BY year_and_month)
+  
+        UNION
+
         (SELECT year_and_month, COUNT(year_and_month) AS year_and_month_count, status FROM (
           SELECT DATE_FORMAT(progress_at, '%Y-%m') AS year_and_month, status FROM tbl_complaints
           WHERE status = '2'
@@ -92,51 +106,74 @@ export class DashboardService {
         GROUP BY year_and_month
         ORDER BY year_and_month)
       `;
-  
+
       const result = await this.sequelize.query(sql, {
-        replacements: [start_date2_str, current_date2, start_date2_str, current_date2]
+        replacements: [
+          start_date2_str,
+          current_date2,
+          start_date2_str,
+          current_date2,
+          start_date2_str,
+          current_date2,
+        ],
       });
-  
+
       let data = result ? result[0] : [];
       let process_series: number[] = [];
       let close_series: number[] = [];
+      let recive_series: number[] = [];
       let labels: string[] = [];
-  
-    
+
       for (let i = 1; i >= -1; i--) {
-        const find_date = new Date(current_date.getFullYear(), current_date.getMonth() + i, 1);
+        const find_date = new Date(
+          current_date.getFullYear(),
+          current_date.getMonth() + i,
+          1,
+        );
         const find_date_str = find_date.toISOString().substring(0, 7);
         labels.unshift(find_date_str);
-  
-        let found_process = data.find((d: any) => d.year_and_month === find_date_str && d.status === '2');
-        process_series.unshift(found_process ? found_process['year_and_month_count'] : 0);
-  
-        let found_close = data.find((d: any) => d.year_and_month === find_date_str && d.status === '3');
-        close_series.unshift(found_close ? found_close['year_and_month_count'] : 0);
+
+        let found_recive = data.find(
+          (d: any) => d.year_and_month === find_date_str && d.status === '1',
+        );
+        recive_series.unshift(
+          found_recive? found_recive['year_and_month_count'] : 0
+        )
+        let found_process = data.find(
+          (d: any) => d.year_and_month === find_date_str && d.status === '2',
+        );
+        process_series.unshift(
+          found_process ? found_process['year_and_month_count'] : 0,
+        );
+
+        let found_close = data.find(
+          (d: any) => d.year_and_month === find_date_str && d.status === '3',
+        );
+        close_series.unshift(
+          found_close ? found_close['year_and_month_count'] : 0,
+        );
       }
-  
+
       return {
         series: [
+          { name: 'รับเรื่อง', data: recive_series },
           { name: 'ดำเนินการอยู่', data: process_series },
-          { name: 'ยุติ', data: close_series }
+          { name: 'ยุติ', data: close_series },
         ],
-        labels
+        labels,
       };
-  
     } catch (e) {
       console.error(e);
       return [];
     }
-  }    
-  
-      
-    async getMostPopular(dateSearch?: string): Promise<any> {
+  }
+
+  async getMostPopular(dateSearch?: string): Promise<any> {
     try {
       if (!dateSearch) {
         dateSearch = new Date().toISOString().substring(0, 10);
       }
-      const sql = 
-      `
+      const sql = `
         SELECT source_type, COUNT(source_type) AS source_type_count, m.mas_name AS source_name  FROM tbl_complaints c
         inner join tbl_master m on m.mas_code = c.source_type and m.mas_group_code = 4
         WHERE DATE(receive_at) = ? and c.deleted_at is null
@@ -144,17 +181,20 @@ export class DashboardService {
         ORDER BY source_type_count DESC
       `;
       const result = await this.sequelize.query(sql, {
-        replacements: [dateSearch]
+        replacements: [dateSearch],
       });
       const data = result ? result[0] : [];
-      const sum = sumBy(data, item => item['source_type_count']);
-      const cals = data.map(item => {
+      const sum = sumBy(data, (item) => item['source_type_count']);
+      const cals = data.map((item) => {
         return {
           source_type: item['source_type'],
           source_type_count: item['source_type_count'],
           source_name: item['source_name'],
-          source_type_percent: ((item['source_type_count']/sum)*100).toFixed(2)
-        }
+          source_type_percent: (
+            (item['source_type_count'] / sum) *
+            100
+          ).toFixed(2),
+        };
       });
       return cals;
     } catch (e) {
@@ -174,24 +214,23 @@ export class DashboardService {
         GROUP BY status
         ORDER BY status
       `;
-  
+
       const result = await this.sequelize.query(sql, {
-        replacements: [dateSearch]
+        replacements: [dateSearch],
       });
       const data = result ? result[0] : [];
-  
+
       const statusMap = {
         '1': { status: '1', status_count: 0, label: 'เรื่องร้องเรียน' },
         '2': { status: '2', status_count: 0, label: 'กำลังดำเนินการ' },
-        '3': { status: '3', status_count: 0, label: 'ยุติ' }
+        '3': { status: '3', status_count: 0, label: 'ยุติ' },
       };
-  
-      data.forEach(item => {
+
+      data.forEach((item) => {
         statusMap[item['status']].status_count = item['status_count'];
       });
-  
-      return Object.values(statusMap);
 
+      return Object.values(statusMap);
     } catch (e) {
       console.error(e);
     }
@@ -211,9 +250,7 @@ export class DashboardService {
       const current_date2 = current_date.toISOString().substring(0, 4);
       const start_date2 = start_date.toISOString().substring(0, 4);
 
-
-      const sql = 
-      `
+      const sql = `
         (SELECT year_and_month, COUNT(year_and_month) AS year_and_month_count, status FROM (
           SELECT YEAR(progress_at) AS year_and_month, status FROM tbl_complaints
           WHERE status = '2'
@@ -231,42 +268,69 @@ export class DashboardService {
         ) AS complaints_count
         GROUP BY year_and_month
         ORDER  BY year_and_month)
+        UNION 
+        (SELECT year_and_month, COUNT(year_and_month) AS year_and_month_count, status FROM (
+          SELECT YEAR(receive_at) AS year_and_month, status FROM tbl_complaints
+          WHERE status = '1'
+          AND YEAR(receive_at) BETWEEN ? AND ?
+          and deleted_at is null
+        ) AS complaints_count
+        GROUP BY year_and_month
+        ORDER  BY year_and_month)
       `;
       const result = await this.sequelize.query(sql, {
-        replacements: [start_date2, current_date2, start_date2, current_date2]
+        replacements: [start_date2, current_date2, start_date2, current_date2,start_date2,current_date2],
       });
       const data = result ? result[0] : [];
 
       let process_series: number[] = [];
       let close_series: number[] = [];
+      let recive_series: number[]  = []
       let labels: string[] = [];
 
-      for (let i=Number(start_date2);i<=Number(current_date2);i++) {
-
+      for (let i = Number(start_date2); i <= Number(current_date2); i++) {
         const find_date = i;
-        labels.push(find_date+'');
-        
-        let found_process = find(data, { year_and_month: find_date, status: '2' });
+        labels.push(find_date + '');
+
+        let found_recive = find(data, {
+          year_and_month: find_date,
+          status: '1',
+        });
+
+        if (found_recive) {
+          recive_series.push(found_recive['year_and_month_count']);
+        } else {
+          recive_series.push(0);
+        }
+
+        let found_process = find(data, {
+          year_and_month: find_date,
+          status: '2',
+        });
         if (found_process) {
           process_series.push(found_process['year_and_month_count']);
         } else {
           process_series.push(0);
         }
 
-        let found_close = find(data, { year_and_month: find_date, status: '3' });
+        let found_close = find(data, {
+          year_and_month: find_date,
+          status: '3',
+        });
         if (found_close) {
           close_series.push(found_close['year_and_month_count']);
         } else {
           close_series.push(0);
         }
       }
-// =======================Nooooooo===============================
+      // =======================Nooooooo===============================
       return {
         series: [
+          { name: 'รับเรื่อง' , data : recive_series},
           { name: 'ดำเนินการอยู่', data: process_series },
-          { name: 'ยุติ', data: close_series }
+          { name: 'ยุติ', data: close_series },
         ],
-        labels
+        labels,
       };
     } catch (e) {
       console.error(e);
@@ -279,8 +343,7 @@ export class DashboardService {
       if (!dateSearch) {
         dateSearch = new Date().toISOString().substring(0, 10);
       }
-      const sql = 
-      `
+      const sql = `
         SELECT 
           tc.source_type, 
           tm.mas_code, 
@@ -295,16 +358,15 @@ export class DashboardService {
         GROUP BY tm.mas_name, tm.mas_code
         ORDER BY total_result DESC;
       `;
-      
+
       const result = await this.sequelize.query(sql, {
-        replacements: [dateSearch]
+        replacements: [dateSearch],
       });
-      
-      
+
       const data = result ? result[0] : [];
-      
-      const series: number[] = data.map(item => item['total_result']);
-      const labels: string[] = data.map(item => item['source_name']);
+
+      const series: number[] = data.map((item) => item['total_result']);
+      const labels: string[] = data.map((item) => item['source_name']);
       return { series, labels };
     } catch (e) {
       console.error(e);
@@ -317,8 +379,7 @@ export class DashboardService {
       if (!dateSearch) {
         dateSearch = new Date().toISOString().substring(0, 10);
       }
-      const sql = 
-      `
+      const sql = `
         select complaint_type, count(complaint_type) as complaint_type_count, m.mas_name as complaint_name from tbl_complaints c
         inner join tbl_master m on m.mas_code = c.complaint_type and m.mas_group_code = '2'
         where date(receive_at) = ? and category_type = '1' and c.deleted_at is null
@@ -326,11 +387,11 @@ export class DashboardService {
         order by complaint_type_count desc, complaint_type asc
       `;
       const result = await this.sequelize.query(sql, {
-        replacements: [dateSearch]
+        replacements: [dateSearch],
       });
       const data = result ? result[0] : [];
-      const series: number[] = data.map(item => item['complaint_type_count']);
-      const labels: string[] = data.map(item => item['complaint_name']);
+      const series: number[] = data.map((item) => item['complaint_type_count']);
+      const labels: string[] = data.map((item) => item['complaint_name']);
 
       let data_3 = [];
       if (data.length > 3) {
@@ -339,14 +400,14 @@ export class DashboardService {
         data_3 = data.slice(0, data.length);
       }
 
-      const sum = sumBy(data_3, item => item['complaint_type_count']);
-      const cals = data_3.map(item => {
+      const sum = sumBy(data_3, (item) => item['complaint_type_count']);
+      const cals = data_3.map((item) => {
         return {
           label: item['complaint_name'],
-          value: ((item['complaint_type_count']/sum)*100).toFixed(2)
-        }
+          value: ((item['complaint_type_count'] / sum) * 100).toFixed(2),
+        };
       });
-      
+
       return { series, labels, top3: cals };
     } catch (e) {
       console.error(e);
@@ -359,8 +420,7 @@ export class DashboardService {
       if (!dateSearch) {
         dateSearch = new Date().toISOString().substring(0, 10);
       }
-      const sql = 
-      `
+      const sql = `
         select * from (
           select count(notified_office) as notified_office_count, d.deptofficeno, d.deptname from tbl_complaints c 
           inner join tbl_department d on c.notified_office = d.deptofficeno
@@ -372,7 +432,7 @@ export class DashboardService {
         order by deptofficeno
       `;
       const result = await this.sequelize.query(sql, {
-        replacements: [dateSearch, dateSearch]
+        replacements: [dateSearch, dateSearch],
       });
       return result ? result[0] : [];
     } catch (e) {
@@ -382,11 +442,10 @@ export class DashboardService {
   }
 
   async testGetData(items?: any, id?: any): Promise<any> {
-    for(let i = 0; i < items.length; i++) {
-     if(id == items[i]['notified_office'])  {
-
-      return items[i];
-     }
+    for (let i = 0; i < items.length; i++) {
+      if (id == items[i]['notified_office']) {
+        return items[i];
+      }
     }
   }
 
@@ -395,14 +454,17 @@ export class DashboardService {
       if (!dateSearch) {
         dayjs(dateSearch).tz('Asia/Bangkok').format('YYYY-MM');
       }
-  
+
       const top3Department = await this.getTop3Department(dateSearch);
 
-      const top3Department2 = await this.sequelize.query('SELECT deptofficeno from tbl_department');
-  
-      const deptOfficeNo = top3Department2[0].map(item => item['deptofficeno']+'');
-      const sql = 
-      `
+      const top3Department2 = await this.sequelize.query(
+        'SELECT deptofficeno from tbl_department',
+      );
+
+      const deptOfficeNo = top3Department2[0].map(
+        (item) => item['deptofficeno'] + '',
+      );
+      const sql = `
         (
         select status, count(notified_office) as notified_office_count, notified_office, d.deptname from tbl_complaints c 
         inner join tbl_department d on c.notified_office = d.deptofficeno
@@ -438,35 +500,31 @@ export class DashboardService {
       )
       `;
 
-      
-      
-  
       const replacements = [dateSearch, dateSearch, dateSearch, dateSearch];
       const result = await this.sequelize.query(sql, {
-        replacements
+        replacements,
       });
       const data = result ? result[0] : [];
-  
+
       let process_series: number[] = [];
       let close_series: number[] = [];
       let sum_series: number[] = [];
       let labels: string[] = [];
-      
 
-  
       const new_data = deptOfficeNo.map(async (item) => {
-      
-
         let office_name;
-  
-        let found_process = find(data, { notified_office: item+'' });
-          
-        let found_close = find(data, { notified_office: item+'', status: '3' });
-        if(!found_process && !found_close) return;
+
+        let found_process = find(data, { notified_office: item + '' });
+
+        let found_close = find(data, {
+          notified_office: item + '',
+          status: '3',
+        });
+        if (!found_process && !found_close) return;
 
         if (found_process) {
           process_series.push(found_process['notified_office_count']);
-          
+
           if (!office_name) {
             office_name = found_process['deptname'];
           }
@@ -485,56 +543,66 @@ export class DashboardService {
           // return;
         }
 
-        sum_series.push(process_series[process_series.length-1] + close_series[close_series.length-1]);
-  
+        sum_series.push(
+          process_series[process_series.length - 1] +
+            close_series[close_series.length - 1],
+        );
+
         if (office_name) {
           labels.push(office_name);
         }
       });
 
-  
       // Combine the series and labels into one array of objects
-      if (labels && labels.length > 0 && process_series && close_series && sum_series) {
+      if (
+        labels &&
+        labels.length > 0 &&
+        process_series &&
+        close_series &&
+        sum_series
+      ) {
         let combinedData = labels.map((label, index) => ({
           label,
           process: process_series[index],
           close: close_series[index],
           sum: sum_series[index],
         }));
-      
+
         // Sort the combined data by the 'sum' value in descending order
         combinedData.sort((a, b) => b.sum - a.sum);
-      
+
         // Ensure there are at least 3 items before slicing
         combinedData = combinedData.slice(0, 3);
-      
+
         // Update the series and labels with the sorted values
-        labels = combinedData.map(item => item.label);
-        process_series = combinedData.map(item => item.process);
-        close_series = combinedData.map(item => item.close);
-        sum_series = combinedData.map(item => item.sum);
+        labels = combinedData.map((item) => item.label);
+        process_series = combinedData.map((item) => item.process);
+        close_series = combinedData.map((item) => item.close);
+        sum_series = combinedData.map((item) => item.sum);
       } else {
-        console.error('Labels or one of the series arrays are undefined or empty:', {
-          labels,
-          process_series,
-          close_series,
-          sum_series,
-        });
+        console.error(
+          'Labels or one of the series arrays are undefined or empty:',
+          {
+            labels,
+            process_series,
+            close_series,
+            sum_series,
+          },
+        );
       }
       return {
         series: [
           { name: 'ดำเนินการอยู่', data: process_series },
           { name: 'ยุติ', data: close_series },
-          { name: 'รวม', data: sum_series }
+          { name: 'รวม', data: sum_series },
         ],
-        labels
+        labels,
       };
     } catch (e) {
       console.error(e);
     }
     return [];
   }
-  
 
   async getLatestComplain(dateSearch?: string, limit?: number): Promise<any> {
     try {
@@ -546,8 +614,7 @@ export class DashboardService {
       if (limit) {
         sql_limit = `limit ${limit}`;
       }
-      const sql = 
-      `
+      const sql = `
         SELECT cid, source_type, m.mas_name AS source_type_name, complaint_type, m2.mas_name AS complaint_type_name, receive_at AS date_received 
         FROM tbl_complaints c
         INNER JOIN tbl_master m ON c.source_type = m.mas_code AND m.mas_group_code = 4
@@ -558,7 +625,7 @@ export class DashboardService {
         ${sql_limit}
       `;
       const result = await this.sequelize.query(sql, {
-        replacements: [dateSearch]
+        replacements: [dateSearch],
       });
       return result ? result[0] : [];
     } catch (e) {
@@ -567,7 +634,10 @@ export class DashboardService {
     return [];
   }
 
-  async getAllComplains(startDateSearch?: string, endDateSearch?: string): Promise<any> {
+  async getAllComplains(
+    startDateSearch?: string,
+    endDateSearch?: string,
+  ): Promise<any> {
     try {
       let value_condition: string[];
       let sql_condition = '';
@@ -582,8 +652,7 @@ export class DashboardService {
         value_condition = [endDateSearch];
       }
 
-      const sql = 
-      `
+      const sql = `
       select m.mas_code, m.mas_name, IFNULL(cp.source_type_count, 0) as source_type_count from tbl_master m 
       left join 
         (
@@ -596,7 +665,7 @@ export class DashboardService {
       order by m.mas_seq
       `;
       const data = await this.sequelize.query(sql, {
-        replacements: value_condition
+        replacements: value_condition,
       });
       return data ? data[0] : [];
     } catch (e) {
@@ -605,13 +674,22 @@ export class DashboardService {
     return [];
   }
 
-  async getCompareComplaintType(category_type: string, startDateSearch?: string, endDateSearch?: string): Promise<any> {
+  async getCompareComplaintType(
+    category_type: string,
+    startDateSearch?: string,
+    endDateSearch?: string,
+  ): Promise<any> {
     try {
       let value_condition: string[];
       let sql_condition = '';
       if (startDateSearch && endDateSearch) {
         sql_condition = `between ? and ?`;
-        value_condition = [startDateSearch, endDateSearch, startDateSearch, endDateSearch];
+        value_condition = [
+          startDateSearch,
+          endDateSearch,
+          startDateSearch,
+          endDateSearch,
+        ];
       } else if (startDateSearch) {
         sql_condition = `>= ?`;
         value_condition = [startDateSearch, startDateSearch];
@@ -625,8 +703,7 @@ export class DashboardService {
         mas_group_code = '3';
       }
 
-      const sql = 
-      `
+      const sql = `
         SELECT 
         c.complaint_type, count(c.complaint_type) as complaint_type_count, m.mas_name 
         FROM tbl_complaints c
@@ -640,7 +717,7 @@ export class DashboardService {
       `;
 
       const result = await this.sequelize.query(sql, {
-        replacements: [mas_group_code, category_type, ...value_condition]
+        replacements: [mas_group_code, category_type, ...value_condition],
       });
       const data = result ? result[0] : [];
 
@@ -659,13 +736,22 @@ export class DashboardService {
     return [];
   }
 
-  async getCompareProcessCloseOfComplain(category_type: string, startDateSearch?: string, endDateSearch?: string): Promise<any> {
+  async getCompareProcessCloseOfComplain(
+    category_type: string,
+    startDateSearch?: string,
+    endDateSearch?: string,
+  ): Promise<any> {
     try {
       let value_condition: string[];
       let sql_condition = '';
       if (startDateSearch && endDateSearch) {
         sql_condition = `between ? and ?`;
-        value_condition = [startDateSearch, endDateSearch, startDateSearch, endDateSearch];
+        value_condition = [
+          startDateSearch,
+          endDateSearch,
+          startDateSearch,
+          endDateSearch,
+        ];
       } else if (startDateSearch) {
         sql_condition = `>= ?`;
         value_condition = [startDateSearch, startDateSearch];
@@ -679,8 +765,7 @@ export class DashboardService {
         mas_group_code = '3';
       }
 
-      const sql = 
-      `
+      const sql = `
         SELECT 
         c.status, c.complaint_type, count(c.complaint_type) as complaint_type_count, m.mas_name 
         FROM tbl_complaints c
@@ -694,43 +779,57 @@ export class DashboardService {
       `;
 
       const result = await this.sequelize.query(sql, {
-        replacements: [mas_group_code, category_type, ...value_condition]
+        replacements: [mas_group_code, category_type, ...value_condition],
       });
-      
-      const data = result ? result[0] : []; 
 
+      const data = result ? result[0] : [];
 
       const data_process = filter(data, { status: '2' });
 
-      const sum_process = sumBy(data_process, item => item['complaint_type_count']);
+      const sum_process = sumBy(
+        data_process,
+        (item) => item['complaint_type_count'],
+      );
 
       const data_close = filter(data, { status: '3' });
 
-      const sum_close = sumBy(data_close, item => item['complaint_type_count']);
+      const sum_close = sumBy(
+        data_close,
+        (item) => item['complaint_type_count'],
+      );
 
-      const percent_process = sum_process > 0 ? ((sum_process/(sum_process+sum_close))*100).toFixed(2) : "0.00";
-      
-      const percent_close = sum_process > 0 ? ((sum_close/(sum_process+sum_close))*100).toFixed(2) : "0.00";
-      
+      const percent_process =
+        sum_process > 0
+          ? ((sum_process / (sum_process + sum_close)) * 100).toFixed(2)
+          : '0.00';
 
-      const data_compare_complaint_type = await this.getCompareComplaintType(category_type, startDateSearch, endDateSearch);
+      const percent_close =
+        sum_process > 0
+          ? ((sum_close / (sum_process + sum_close)) * 100).toFixed(2)
+          : '0.00';
+
+      const data_compare_complaint_type = await this.getCompareComplaintType(
+        category_type,
+        startDateSearch,
+        endDateSearch,
+      );
 
       return {
         status: [
           {
-            "status": "2",
-            "status_count": sum_process,
-            "status_percent": percent_process,
-            "label": "กำลังดำเนินการ"
+            status: '2',
+            status_count: sum_process,
+            status_percent: percent_process,
+            label: 'กำลังดำเนินการ',
           },
           {
-            "status": "3",
-            "status_count": sum_close,
-            "status_percent": percent_close,
-            "label": "ยุติ"
-          }
+            status: '3',
+            status_count: sum_close,
+            status_percent: percent_close,
+            label: 'ยุติ',
+          },
         ],
-        complaint_type: data_compare_complaint_type
+        complaint_type: data_compare_complaint_type,
       };
     } catch (e) {
       console.error(e);
@@ -738,32 +837,40 @@ export class DashboardService {
     return [];
   }
 
-  async getProgressByDateRange(startDateSearch?: string, endDateSearch?: string): Promise<any> {
+  async getProgressByDateRange(
+    startDateSearch?: string,
+    endDateSearch?: string,
+  ): Promise<any> {
     try {
       let current_date = new Date();
       let start_date = new Date();
       let end_date = new Date();
-  
+
       // If endDateSearch is provided, parse it and set the start and end dates
       if (endDateSearch) {
         current_date = new Date(Date.parse(endDateSearch));
         end_date = new Date(current_date); // Initialize end_date to current_date
         start_date = new Date(Date.parse(startDateSearch));
-        
+
         // Set start date to the beginning of the day
         start_date.setHours(0, 0, 0, 0);
         // Set end date to the end of the day
         end_date.setHours(23, 59, 59, 999);
       }
-  
+
       // Prepare the start_date for the first day of the month for your logic
-      const start_date2 = new Date(start_date.getFullYear(), start_date.getMonth(), 1);
+      const start_date2 = new Date(
+        start_date.getFullYear(),
+        start_date.getMonth(),
+        1,
+      );
       start_date2.setDate(start_date2.getDate() + 1);
-      
-      const monthDiff = current_date.getMonth() - start_date.getMonth() +
-        (12 * (current_date.getFullYear() - start_date.getFullYear()));
-        
-  
+
+      const monthDiff =
+        current_date.getMonth() -
+        start_date.getMonth() +
+        12 * (current_date.getFullYear() - start_date.getFullYear());
+
       const sql = `
         (SELECT 
         year_and_month,
@@ -797,61 +904,69 @@ export class DashboardService {
         GROUP BY year_and_month
         ORDER  BY year_and_month)
       `;
-  
+
       // Use the modified start and end dates in the query
       const result = await this.sequelize.query(sql, {
-        replacements: [start_date, end_date, start_date, end_date]
+        replacements: [start_date, end_date, start_date, end_date],
       });
-  
+
       let data = result ? result[0] : [];
-  
+
       let process_series: number[] = [];
       let close_series: number[] = [];
       let labels: string[] = [];
 
       // Loop through the months and gather data
       for (let i = 0; i <= monthDiff; i++) {
-        const find_date = dayjs(start_date).tz('Asia/Bangkok').format('YYYY-MM');
-  
+        const find_date = dayjs(start_date)
+          .tz('Asia/Bangkok')
+          .format('YYYY-MM');
+
         labels.push(find_date);
-  
-        let found_process = find(data, { year_and_month: find_date, status: '2' });
+
+        let found_process = find(data, {
+          year_and_month: find_date,
+          status: '2',
+        });
         if (found_process) {
           process_series.push(found_process['year_and_month_count']);
         } else {
           process_series.push(0);
         }
-  
-        let found_close = find(data, { year_and_month: find_date, status: '3' });
+
+        let found_close = find(data, {
+          year_and_month: find_date,
+          status: '3',
+        });
         if (found_close) {
           close_series.push(found_close['year_and_month_count']);
         } else {
           close_series.push(0);
         }
-  
+
         start_date.setMonth(start_date.getMonth() + 1);
       }
-  
-      
 
       return {
         series: [
           { name: 'ดำเนินการอยู่', data: process_series },
-          { name: 'ยุติ', data: close_series }
+          { name: 'ยุติ', data: close_series },
         ],
-        labels
+        labels,
       };
-  
     } catch (e) {
       console.error(e);
     }
     return [];
   }
-  
-  async getDepartment(deptType: string, startDateSearch?: string, endDateSearch?: string): Promise<any> {
+
+  async getDepartment(
+    deptType: string,
+    startDateSearch?: string,
+    endDateSearch?: string,
+  ): Promise<any> {
     try {
-      const sql = 
-      `
+      const sql = `
         SELECT COUNT(COALESCE(sub_notified_office , notified_office)) AS notified_office_count, d.deptofficeno, d.deptname
         FROM tbl_complaints c 
         INNER JOIN tbl_department d ON COALESCE(c.sub_notified_office , c.notified_office) = d.deptofficeno AND d.depttype = ?
@@ -866,9 +981,15 @@ export class DashboardService {
 
       `;
       const result = await this.sequelize.query(sql, {
-        replacements: [Number(deptType), startDateSearch, endDateSearch, startDateSearch, endDateSearch]
+        replacements: [
+          Number(deptType),
+          startDateSearch,
+          endDateSearch,
+          startDateSearch,
+          endDateSearch,
+        ],
       });
-      
+
       return result ? result[0] : [];
     } catch (e) {
       console.error(e);
@@ -876,15 +997,21 @@ export class DashboardService {
     return [];
   }
 
-  async getDepartmentComplain(deptType: string, startDateSearch: string, endDateSearch: string): Promise<any> {
+  async getDepartmentComplain(
+    deptType: string,
+    startDateSearch: string,
+    endDateSearch: string,
+  ): Promise<any> {
     try {
-      const department = await this.getDepartment(deptType, startDateSearch, endDateSearch);
-      
-      const deptOfficeNo = department.map(item => item['deptofficeno']+'')
+      const department = await this.getDepartment(
+        deptType,
+        startDateSearch,
+        endDateSearch,
+      );
 
-      
-      const sql = 
-      `
+      const deptOfficeNo = department.map((item) => item['deptofficeno'] + '');
+
+      const sql = `
       (
         select status, count(COALESCE(sub_notified_office, notified_office)) as notified_office_count, 
         notified_office, d.deptname, d.depttype, c.sub_notified_office 
@@ -912,78 +1039,94 @@ export class DashboardService {
     )
     ORDER BY notified_office;
     `;
-    const result = await this.sequelize.query(sql, {
-        replacements: [Number(deptType), startDateSearch, endDateSearch, Number(deptType), startDateSearch, endDateSearch],
-        logging: true
-        
+      const result = await this.sequelize.query(sql, {
+        replacements: [
+          Number(deptType),
+          startDateSearch,
+          endDateSearch,
+          Number(deptType),
+          startDateSearch,
+          endDateSearch,
+        ],
+        logging: true,
       });
-      
+
       const data = result ? result[0] : [];
-      
+
       let process_series: number[] = [];
       let close_series: number[] = [];
       let sum_series: number[] = [];
       let labels: string[] = [];
-      
-      const new_data = deptOfficeNo.map(item => {
+
+      const new_data = deptOfficeNo.map((item) => {
         let office_name;
-          const key = deptType === '2' ? 'sub_notified_office' : 'notified_office';
-          let found_process = find(data, { [key]: item+'', status: '2' });
-          if (found_process) {
-            process_series.push(found_process['notified_office_count']);
-            
-            if (!office_name) {
-              office_name = found_process['deptname'];
-            }
-          } else {
-            process_series.push(0);
+        const key =
+          deptType === '2' ? 'sub_notified_office' : 'notified_office';
+        let found_process = find(data, { [key]: item + '', status: '2' });
+        if (found_process) {
+          process_series.push(found_process['notified_office_count']);
+
+          if (!office_name) {
+            office_name = found_process['deptname'];
           }
-          
-          let found_close = find(data, { [key]: item+'', status: '3' });
-          if (found_close) {
-            close_series.push(found_close['notified_office_count']);
-            
-            if (!office_name) {
-              office_name = found_close['deptname'];
-            }
+        } else {
+          process_series.push(0);
+        }
+
+        let found_close = find(data, { [key]: item + '', status: '3' });
+        if (found_close) {
+          close_series.push(found_close['notified_office_count']);
+
+          if (!office_name) {
+            office_name = found_close['deptname'];
+          }
         } else {
           close_series.push(0);
         }
-        
-        sum_series.push(process_series[process_series.length-1] + close_series[close_series.length-1]);
-        
+
+        sum_series.push(
+          process_series[process_series.length - 1] +
+            close_series[close_series.length - 1],
+        );
+
         if (office_name) {
           labels.push(office_name);
         }
       });
-// ============================================================
+      // ============================================================
       return {
         series: [
           { name: 'ดำเนินการอยู่', data: process_series },
           { name: 'ยุติ', data: close_series },
-          { name: 'รวม', data: sum_series }
+          { name: 'รวม', data: sum_series },
         ],
-        labels
+        labels,
       };
     } catch (e) {
       console.error(e);
     }
     return [];
   }
-  
 
-  
-  async getDepartmentComplaintoday(deptType: number[], startDateSearch: string, endDateSearch: string): Promise<any> {
+  async getDepartmentComplaintoday(
+    deptType: number[],
+    startDateSearch: string,
+    endDateSearch: string,
+  ): Promise<any> {
     try {
-        // const departmentPromises = deptType.map(type => this.getDepartment(type.toString(), startDateSearch, endDateSearch));
-        // const departments = await Promise.all(departmentPromises);
-        
-        // const department = departments.flat();
-        // const deptOfficeNo = department.map(item => item['deptofficeno']);
-        const top3Department2 = await this.sequelize.query('SELECT deptofficeno from tbl_department');
-    
-        const deptOfficeNo = top3Department2[0].map(item => item['deptofficeno']+'');
-        const sql = `
+      // const departmentPromises = deptType.map(type => this.getDepartment(type.toString(), startDateSearch, endDateSearch));
+      // const departments = await Promise.all(departmentPromises);
+
+      // const department = departments.flat();
+      // const deptOfficeNo = department.map(item => item['deptofficeno']);
+      const top3Department2 = await this.sequelize.query(
+        'SELECT deptofficeno from tbl_department',
+      );
+
+      const deptOfficeNo = top3Department2[0].map(
+        (item) => item['deptofficeno'] + '',
+      );
+      const sql = `
         SELECT 
             d.deptname, 
             c.status, 
@@ -1008,85 +1151,83 @@ export class DashboardService {
             d.deptofficeno;
 
       `;
-        const result = await this.sequelize.query(sql,{
-          replacements: [startDateSearch, startDateSearch]
-        });
-        
-        const data: ComplaintData[] = (result[0] as ComplaintData[]) || [];
-        
-        let process_series: number[] = [];
-        let close_series: number[] = [];
-        let sum_series: number[] = [];
-        let labels: string[] = [];
-        
-  
-    
-        const new_data = deptOfficeNo.map(async (item) => {
-  
-          let office_name;
-    
-          let found_process = find(data, { deptofficeno: item+'' });
-            
-          let found_close = find(data, { deptofficeno: item+'', status: '3' });
-          if(!found_process && !found_close) return;
-  
-          if (found_process) {
-            process_series.push(found_process['notified_office_count']);
-            if (!office_name) {
-              office_name = found_process['deptname'];
-            }
-          } else {
-            process_series.push(0);
-            // return;
-          }
-  
-          if (found_close) {
-            close_series.push(found_close['notified_office_count']);
-            if (!office_name) {
-              office_name = found_close['deptname'];
-            }
-          } else {
-            close_series.push(0);
-            // return;
-          }
-  
-          sum_series.push(process_series[process_series.length-1] + close_series[close_series.length-1]);
-    
-          if (office_name) {
-            labels.push(office_name);
-          }
-        });
-  
-    
-        // Combine the series and labels into one array of objects
-        let combinedData = labels.map((label, index) => ({
-          label,
-          process: process_series[index],
-          close: close_series[index],
-          sum: sum_series[index]
-        }));
-    
-        // Sort the combined data by the 'sum' value in descending order
-        combinedData.sort((a, b) => b.sum - a.sum);
-    
-        // Update the series and labels with the sorted values
-        labels = combinedData.map(item => item.label);
-        process_series = combinedData.map(item => item.process);
-        close_series = combinedData.map(item => item.close);
-        sum_series = combinedData.map(item => item.sum);
-    
-        return {
-          series: [
-            { name: 'ดำเนินการอยู่', data: process_series },
-            { name: 'ยุติ', data: close_series },
-            { name: 'รวม', data: sum_series }
-          ],
-          labels
-        };
-    } catch (e) {
-        console.error(e);
-        return []; // หรือ return ค่าที่เหมาะสม
-    }
-}
+      const result = await this.sequelize.query(sql, {
+        replacements: [startDateSearch, startDateSearch],
+      });
 
+      const data: ComplaintData[] = (result[0] as ComplaintData[]) || [];
+
+      let process_series: number[] = [];
+      let close_series: number[] = [];
+      let sum_series: number[] = [];
+      let labels: string[] = [];
+
+      const new_data = deptOfficeNo.map(async (item) => {
+        let office_name;
+
+        let found_process = find(data, { deptofficeno: item + '' });
+
+        let found_close = find(data, { deptofficeno: item + '', status: '3' });
+        if (!found_process && !found_close) return;
+
+        if (found_process) {
+          process_series.push(found_process['notified_office_count']);
+          if (!office_name) {
+            office_name = found_process['deptname'];
+          }
+        } else {
+          process_series.push(0);
+          // return;
+        }
+
+        if (found_close) {
+          close_series.push(found_close['notified_office_count']);
+          if (!office_name) {
+            office_name = found_close['deptname'];
+          }
+        } else {
+          close_series.push(0);
+          // return;
+        }
+
+        sum_series.push(
+          process_series[process_series.length - 1] +
+            close_series[close_series.length - 1],
+        );
+
+        if (office_name) {
+          labels.push(office_name);
+        }
+      });
+
+      // Combine the series and labels into one array of objects
+      let combinedData = labels.map((label, index) => ({
+        label,
+        process: process_series[index],
+        close: close_series[index],
+        sum: sum_series[index],
+      }));
+
+      // Sort the combined data by the 'sum' value in descending order
+      combinedData.sort((a, b) => b.sum - a.sum);
+
+      // Update the series and labels with the sorted values
+      labels = combinedData.map((item) => item.label);
+      process_series = combinedData.map((item) => item.process);
+      close_series = combinedData.map((item) => item.close);
+      sum_series = combinedData.map((item) => item.sum);
+
+      return {
+        series: [
+          { name: 'ดำเนินการอยู่', data: process_series },
+          { name: 'ยุติ', data: close_series },
+          { name: 'รวม', data: sum_series },
+        ],
+        labels,
+      };
+    } catch (e) {
+      console.error(e);
+      return []; // หรือ return ค่าที่เหมาะสม
+    }
+  }
 }

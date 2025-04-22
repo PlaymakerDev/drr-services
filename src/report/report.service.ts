@@ -312,6 +312,8 @@ export class ReportService {
 
       const complain_data = await this.getComplainById(Number(cid));
 
+      const field_recive_file = ['attachment_received1','attachment_received2','attachment_received3','attachment_received4','attachment_received5']
+      const field_closed_file = ['attachment_closed1', 'attachment_closed2','attachment_closed3','attachment_closed4','attachment_closed5']
       const absolutePath = path.resolve('src/resource/template/report1.html');
 
       const browser = await puppeteer.launch({
@@ -325,12 +327,118 @@ export class ReportService {
         Authorization: authHeader,
         user: JSON.stringify(user)
       });
-      //Get HTML content from URL
       await page.goto(`${process.env.REPORT_SERVER}/api/v1/report/receive_complaint?cid=${cid}`);
+      let attachmentsHtml = '<div style="page-break-before: always; padding: 20px;"><h4>ไฟล์ประกอบการร้องเรียน</h4>';
+      let haveAttach =  false
+      let closeAttachmentsHtml = '<div style="page-break-before: always; padding: 20px;"><h4>ไฟล์ประกอบการร้องเรียน</h4>';
+      let haveCloseAttach = false
+      for (let index = 0; index < field_recive_file.length; index++) {
+        const element = field_recive_file[index];
+        const filePaths = complain_data[element]
+        if (filePaths) {
+            haveAttach = true
+            const fileData = await fs.promises.readFile(__dirname +'/../../' +  filePaths);
+            const fileName = path.basename(filePaths);
+            const fileExt = path.extname(filePaths).toLowerCase();
+            
+            if (['.jpg', '.jpeg', '.png', '.gif'].includes(fileExt)) {
+              // For images
+              const base64Data = fileData.toString('base64');
+              const mimeType = fileExt === '.jpg' || fileExt === '.jpeg' ? 'image/jpeg' : 
+                               fileExt === '.png' ? 'image/png' : 'image/gif';
+              
+              attachmentsHtml += `
+                <div style="margin-bottom: 20px;">
+                  <img src="data:${mimeType};base64,${base64Data}" style="max-width: 100%; max-height: 300px;" />
+                </div>
+              `;
+            } else if (['.pdf'].includes(fileExt)) {
+             
+              attachmentsHtml += `
+                <div style="margin-bottom: 20px;">
+                  <a href="#">View PDF</a>
+                </div>
+              `;
+            } else if (['.txt', '.md', '.html', '.css', '.js'].includes(fileExt)) {
+              const textContent = fileData.toString('utf-8');
+              attachmentsHtml += `
+                <div style="margin-bottom: 20px;">
+                  <pre style="background-color: #f5f5f5; padding: 10px; overflow-x: auto; max-height: 300px;">${textContent}</pre>
+                </div>
+              `;
+            } else {
+              attachmentsHtml += `
+                <div style="margin-bottom: 20px;">
+                  <p>${fileName} (File attachment)</p>
+                </div>
+              `;
+          }
+        }
+      }
+     
+      for (let index = 0; index < field_closed_file.length; index++) {
+        const element = field_closed_file[index];
+        const filePaths = complain_data[element]
+        if (filePaths) {
+            haveCloseAttach = true
+            const fileData = await fs.promises.readFile(__dirname +'/../../' +  filePaths);
+            const fileName = path.basename(filePaths);
+            const fileExt = path.extname(filePaths).toLowerCase();
+            
+            if (['.jpg', '.jpeg', '.png', '.gif'].includes(fileExt)) {
+              // For images
+              const base64Data = fileData.toString('base64');
+              const mimeType = fileExt === '.jpg' || fileExt === '.jpeg' ? 'image/jpeg' : 
+                               fileExt === '.png' ? 'image/png' : 'image/gif';
+              
+              closeAttachmentsHtml += `
+                <div style="margin-bottom: 20px;">
+                  <img src="data:${mimeType};base64,${base64Data}" style="max-width: 100%; max-height: 300px;" />
+                </div>
+              `;
+            } else if (['.pdf'].includes(fileExt)) {
+             
+              closeAttachmentsHtml += `
+                <div style="margin-bottom: 20px;">
+                  <a href="#">View PDF</a>
+                </div>
+              `;
+            } else if (['.txt', '.md', '.html', '.css', '.js'].includes(fileExt)) {
+              const textContent = fileData.toString('utf-8');
+              closeAttachmentsHtml += `
+                <div style="margin-bottom: 20px;">
+                  <pre style="background-color: #f5f5f5; padding: 10px; overflow-x: auto; max-height: 300px;">${textContent}</pre>
+                </div>
+              `;
+            } else {
+              closeAttachmentsHtml += `
+                <div style="margin-bottom: 20px;">
+                  <p>${fileName} (File attachment)</p>
+                </div>
+              `;
+          }
+        }
+      }
+      
+      attachmentsHtml += '</div>';
+      closeAttachmentsHtml += '</div>'
 
-      //Get HTML content from HTML file
-      // const html = fs.readFileSync(absolutePath, 'utf-8');
-      // await page.setContent(html, { waitUntil: 'domcontentloaded' });
+      if(haveAttach){
+        await page.evaluate((html) => {
+          const container = document.body;
+          const div = document.createElement('div');
+          div.innerHTML = html;
+          container.appendChild(div);
+        }, attachmentsHtml);
+      }
+      if(haveCloseAttach){
+        await page.evaluate((html) => {
+          const container = document.body;
+          const div = document.createElement('div');
+          div.innerHTML = html;
+          container.appendChild(div);
+        }, closeAttachmentsHtml);
+      }
 
       await page.emulateMediaType('screen');
 
