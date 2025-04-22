@@ -1272,7 +1272,6 @@ export class ReportService {
 
   async getReport3(year_month: string,): Promise<any> {
     try {
-      console.log('=======88888888888888888888888888')
       let pdfRaw = []
       const browser = await puppeteer.launch({
         headless: true,

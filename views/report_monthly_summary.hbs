@@ -329,6 +329,7 @@
                 <td style="width: 200px; padding: 5px;">
                     <div
                         style="display: flex; flex-direction: column; gap: 10px; border : 0px solid red ; height:540px ;margin-top:20px; font-size:large;">
+                         
                         <div
                             style="padding: 0px 5px; background-color: #F5F5F5; border-radius: 4px; padding: 10px; height:80px; width:200px">
                             <p>จำนวนเรื่อง</p>
@@ -338,13 +339,18 @@
                             <p>ยุติ (รายการ)</p>
                             <h1 style="color: #43BE6D;">{{complaintDataNumber.complaintEnd}}</h1>
                         </div>
-                        <div style="padding: 0px 5px; padding: 10px; width:200px">
+                        <div style="padding: 0px 5px;background-color: #F5F5F5; padding: 10px; width:200px">
                             <p>กำลังดำเนินการ (รายการ)</p>
                             <h1 style="color: #FF4A4A;">{{complaintDataNumber.complaintInprogress}}</h1>
                         </div>
-                        <div>
-                            <img src="{{basePath}}/public/icons/mascot.svg" alt="Mascot Icon">
+                        <div
+                            style="padding: 0px 5px; border-radius: 4px; padding: 10px; height:80px; width:200px">
+                            <p>รับเรื่อง (รายการ)</p>
+                            <h1 style="color: #F1E14A;">{{complaintDataNumber.complainRecive}}</h1>
                         </div>
+                        {{!-- <div>
+                            <img src="{{basePath}}/public/icons/mascot.svg" alt="Mascot Icon">
+                        </div> --}}
                     </div>
                 </td>
                 <td style="padding: 10px;">

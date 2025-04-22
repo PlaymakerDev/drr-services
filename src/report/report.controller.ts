@@ -404,10 +404,12 @@ export class ReportController {
 
 
     const totalData = getcasemonth.find(item => item.total !== undefined)
+    const status1 = getcasemonth.find(item => item.status === '1')
     const status3 = getcasemonth.find(item => item.status === '3');
     const status2 = getcasemonth.find(item => item.status === '2');
 
     const complaintInprogress = status2.status_count
+    const complatntRecive = status1.status_count
     const complaintEnd = status3.status_count
     const complaintTotal = totalData.total
 
@@ -422,6 +424,7 @@ export class ReportController {
         conplaintType: getTypeComplaint,
       },
       complaintDataNumber: {
+        complainRecive: complatntRecive.toLocaleString(), 
         complaintTotal: complaintTotal.toLocaleString(),
         complaintInprogress: complaintInprogress.toLocaleString(),
         complaintEnd: complaintEnd.toLocaleString(),
