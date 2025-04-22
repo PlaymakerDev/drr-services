@@ -32,6 +32,7 @@ export class ReportRow {
   formatted_month: string;
   year_month: string;
   total_count: number;
+  status_1_count: number;
   status_2_count: number;
   status_3_count: number;
 }

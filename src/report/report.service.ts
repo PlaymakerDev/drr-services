@@ -1595,6 +1595,7 @@ export class ReportService {
       SELECT
         DATE_FORMAT(receive_at, '%Y-%m') AS formatted_month, -- Use a unique alias
         COUNT(*) AS total_count,
+        SUM(CASE WHEN status = '1' THEN 1 ELSE 0 END) AS status_1_count,
         SUM(CASE WHEN status = '2' THEN 1 ELSE 0 END) AS status_2_count,
         SUM(CASE WHEN status = '3' THEN 1 ELSE 0 END) AS status_3_count
       FROM
@@ -1618,6 +1619,7 @@ export class ReportService {
       const formattedData = data.map((row) => ({
         year_month: row.formatted_month,
         total: row.total_count,
+        status_1 : row.status_1_count,
         status_2: row.status_2_count,
         status_3: row.status_3_count,
       }));
