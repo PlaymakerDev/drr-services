@@ -399,7 +399,7 @@ export class ReportController {
     
 
 
-    console.log('complaintType1Format', complaintType1Format)
+    // console.log('complaintType1Format', complaintType1Format)
 
 
 
@@ -412,8 +412,9 @@ export class ReportController {
     const complatntRecive = status1.status_count
     const complaintEnd = status3.status_count
     const complaintTotal = totalData.total
-
-    console.log('Calulator pass 55555555555555555555555555555555 >>>>>>>', complaints)
+    console.log(complaints);
+    
+    console.log('Calulator pass 55555555555555555555555555555555 >>>>>>>', complaints[0].complaints)
 
 
     let testdata = {
@@ -433,7 +434,7 @@ export class ReportController {
       yearnow:year+543,
       yearbefore:year+542,
       thaiMonth:thaiMonth,
-      complaintType: {
+      complaintType: { 
         complaintType1: complaintType1Format,
         complaintType2: complaintType2Format
       },

@@ -1521,15 +1521,19 @@ export class ReportService {
                 m.mas_name,  
                 c.road, 
                 c.area, 
-                c.explanation_result 
+                c.explanation_result,
+                CASE 
+                  WHEN c.status = 1 THEN 'รับเรื่อง'
+                  WHEN c.status = 2 THEN 'กำลังดำเนินการ'
+                  ELSE 'ยุติ'
+                END as status
             FROM tbl_complaints c
             INNER JOIN tbl_master m ON m.mas_code = c.complaint_type AND m.mas_group_code = '2'
             INNER JOIN tbl_department d ON d.deptofficeno = c.notified_office AND d.depttype = 1
             LEFT JOIN tbl_department sd ON sd.deptofficeno = c.sub_notified_office AND sd.depttype = 2
             WHERE c.category_type = '1' 
                 AND c.source_type = '${code}' 
-                AND c.status = '3' 
-                AND DATE_FORMAT(c.terminate_at, '%Y-%m') = '${monthYear}'
+                AND DATE_FORMAT(c.receive_at, '%Y-%m') = '${monthYear}'
             ORDER BY c.cid
         `);
       const thaiMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
@@ -1567,6 +1571,7 @@ export class ReportService {
           road: complaint.road ? complaint.road : "",
           area: complaint.area ? complaint.area : "",
           explanation_result: complaint.explanation_result ? complaint.explanation_result : "ไม่มีผลการอธิบาย",
+          status: complaint.status
         };
 
         if (!complaintsBySource[masName]) {

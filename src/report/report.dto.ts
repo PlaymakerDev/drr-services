@@ -27,6 +27,7 @@ export class Summarymouth {
   road?: string;
   area?: string;
   explanation_result?: string;
+  status? :string
 }
 export class ReportRow {
   formatted_month: string;
