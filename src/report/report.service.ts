@@ -1534,6 +1534,7 @@ export class ReportService {
             WHERE c.category_type = '1' 
                 AND c.source_type = '${code}' 
                 AND DATE_FORMAT(c.receive_at, '%Y-%m') = '${monthYear}'
+                AND deleted_at is null
             ORDER BY c.cid
         `);
       const thaiMonths = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
