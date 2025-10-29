@@ -1661,8 +1661,9 @@ export class ReportService {
         }
       )
       console.log('getUser >>>>>>> ', getUser);
-
-      const getPos = await TblPosition.findOne(
+      let getPos = null
+      if( getUser){
+       getPos = await TblPosition.findOne(
         {
           where: {
             PID: getUser.position
@@ -1670,13 +1671,14 @@ export class ReportService {
           attributes: ['PName']
         }
       )
+    }
       console.log('getPos >>>>>>> ', getPos);
 
 
-      const setName = `${getUser.first_name} ${getUser.last_name}`
+      const setName =  getUser ? `${getUser.first_name} ${getUser.last_name}` : ""
       console.log('name >>>>> ', setName);
 
-      const pos = getPos.PName
+      const pos = getPos? getPos.PName : ''
       return {
         success: true,
         data: {

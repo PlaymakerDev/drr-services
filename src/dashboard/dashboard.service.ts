@@ -522,7 +522,6 @@ export class DashboardService {
         replacements,
       });
       const data = result ? result[0] : [];
-      console.log({data});
       
       let process_series: number[] = [];
       let close_series: number[] = [];
